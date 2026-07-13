@@ -1,0 +1,2157 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Gestor de Cadastros Otimizado</title>
+  <!-- Manifesto inline configurado para carregar especificamente a página ind.html ao ser aberto -->
+  <link rel="manifest" href='data:application/manifest+json,%7B%22name%22%3A%22Gestor%20de%20Cadastros%20Otimizado%22%2C%22short_name%22%3A%22GestorCadastros%22%2C%22start_url%22%3A%22ind.html%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23f8fafc%22%2C%22theme_color%22%3A%22%234f46e5%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22https%3A%2F%2Fplacehold.co%2F192x192%2F4f46e5%2Fffffff%3Ftext%3DGC%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fpng%22%7D%2C%7B%22src%22%3A%22https%3A%2F%2Fplacehold.co%2F512x512%2F4f46e5%2Fffffff%3Ftext%3DGC%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fpng%22%7D%5D%7D' />
+  
+  <style>
+    :root {
+      --primary-color: #4f46e5;
+      --primary-hover: #4338ca;
+      --success-color: #10b981;
+      --success-hover: #059669;
+      --danger-color: #ef4444;
+      --danger-hover: #dc2626;
+      --warning-color: #f59e0b;
+      --warning-hover: #d97706;
+      
+      --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      --card-bg: #ffffff;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --border-color: #cbd5e1;
+      --border-focus: #818cf8;
+      
+      --radius-lg: 20px;
+      --radius-md: 14px;
+      --radius-sm: 8px;
+      
+      --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+      --shadow-lg: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.08);
+      
+      --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding-bottom: 110px;
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 24px 16px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .view-section {
+      display: none;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.25s ease-out, transform 0.25s ease-out;
+    }
+
+    .view-section.active {
+      display: flex;
+      flex-direction: column;
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 850;
+      text-align: center;
+      color: #0f172a;
+      margin-top: 20px;
+      margin-bottom: 10px;
+      letter-spacing: -0.03em;
+    }
+
+    h2 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 24px;
+      text-align: center;
+      letter-spacing: -0.02em;
+    }
+
+    h3 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin: 28px 0 16px 0;
+      align-self: flex-start;
+    }
+
+    p {
+      color: var(--text-muted);
+      text-align: center;
+      font-size: 1rem;
+      margin-bottom: 24px;
+    }
+
+    hr {
+      border: 0;
+      height: 1px;
+      background: rgba(203, 213, 225, 0.6);
+      margin: 30px 0;
+    }
+
+    form {
+      background: var(--card-bg);
+      padding: 24px;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    input[type="text"],
+    input[type="url"],
+    input[type="tel"],
+    select {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1.5px solid var(--border-color);
+      border-radius: var(--radius-md);
+      font-size: 0.95rem;
+      color: var(--text-main);
+      background-color: #f8fafc;
+      transition: var(--transition);
+      -webkit-appearance: none;
+    }
+
+    select {
+      background-image: url("data:image/svg+xml;utf8,<svg fill='%2364748b' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      background-size: 20px;
+      cursor: pointer;
+    }
+
+    input[type="text"]:focus,
+    input[type="url"]:focus,
+    input[type="tel"]:focus,
+    select:focus {
+      outline: none;
+      border-color: var(--border-focus);
+      background-color: #ffffff;
+      box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
+    }
+
+    .file-input-wrapper {
+      position: relative;
+      width: 100%;
+    }
+
+    input[type="file"] {
+      width: 100%;
+      padding: 12px;
+      background: #f1f5f9;
+      border-radius: var(--radius-md);
+      border: 2px dashed #cbd5e1;
+      cursor: pointer;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      transition: var(--transition);
+    }
+
+    input[type="file"]:hover {
+      border-color: var(--primary-color);
+      background: #eef2f6;
+    }
+
+    /* Elemento de Pré-visualização de Imagem no Formulário */
+    .form-image-preview-wrapper {
+      display: none;
+      position: relative;
+      align-self: center;
+      width: 120px;
+      height: 120px;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 2.5px solid #cbd5e1;
+      box-shadow: var(--shadow-md);
+      margin: 8px 0;
+    }
+
+    .form-image-preview-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .form-image-preview-wrapper .btn-remove-preview {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      background-color: rgba(239, 68, 68, 0.9);
+      color: #ffffff;
+      border: none;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+    }
+
+    .form-image-preview-wrapper .btn-remove-preview:hover {
+      background-color: var(--danger-hover);
+      transform: scale(1.1);
+    }
+
+    form button[type="submit"] {
+      width: 100%;
+      padding: 14px;
+      font-size: 1rem;
+      font-weight: 700;
+      border: none;
+      background-color: var(--primary-color);
+      color: #ffffff;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+      transition: var(--transition);
+    }
+
+    form button[type="submit"]:hover {
+      background-color: var(--primary-hover);
+      transform: translateY(-1px);
+    }
+
+    form button[type="submit"]:active {
+      transform: translateY(1px);
+    }
+
+    .btn-cancelar-edicao {
+      width: 100%;
+      padding: 12px;
+      font-size: 0.9rem;
+      font-weight: 650;
+      border: 1.5px solid var(--border-color);
+      background-color: transparent;
+      color: var(--text-muted);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .btn-cancelar-edicao:hover {
+      background-color: #f1f5f9;
+      color: var(--text-main);
+    }
+
+    .sem-dados {
+      text-align: center;
+      background: rgba(255, 255, 255, 0.6);
+      border: 1.5px dashed var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 40px 24px;
+      color: var(--text-muted);
+      font-weight: 500;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      margin-top: 10px;
+      width: 100%;
+    }
+
+    /* Barra de Pesquisa e Filtros */
+    .search-box-wrapper {
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .search-input-group {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .search-input-icon {
+      position: absolute;
+      left: 14px;
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    .search-box-wrapper input[type="text"] {
+      padding-left: 42px;
+    }
+
+    .filter-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .filter-row select {
+      flex: 1;
+      padding: 10px 14px;
+      font-size: 0.85rem;
+    }
+
+    #listaIds, #listaCompleta {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      border: 1px solid rgba(226, 232, 240, 0.7);
+      overflow: hidden;
+      transition: var(--transition);
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 32px -8px rgba(15, 23, 42, 0.08);
+      border-color: rgba(99, 102, 241, 0.3);
+    }
+
+    .card-gestao {
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .badge-id {
+      background: #f1f5f9;
+      color: #334155;
+      font-size: 0.9rem;
+      font-weight: 700;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .card-actions-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .card-actions-row button {
+      padding: 8px 12px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .btn-editar {
+      background-color: rgba(245, 158, 11, 0.15);
+      color: var(--warning-hover);
+    }
+
+    .btn-editar:hover {
+      background-color: var(--warning-color);
+      color: #ffffff;
+    }
+
+    .btn-excluir {
+      background-color: rgba(239, 68, 68, 0.1);
+      color: var(--danger-color);
+    }
+
+    .btn-excluir:hover {
+      background-color: var(--danger-color);
+      color: #ffffff;
+    }
+
+    .card-exibicao {
+      display: flex;
+      flex-direction: column;
+      text-align: left;
+      position: relative;
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid rgba(226, 232, 240, 0.6);
+      transition: var(--transition);
+    }
+
+    .card-exibicao:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+      border-color: rgba(99, 102, 241, 0.35);
+    }
+
+    .card-header-exibicao {
+      padding: 12px 20px 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .tag-id {
+      background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 0.85rem;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      letter-spacing: 0.03em;
+      box-shadow: 0 4px 10px rgba(79, 70, 229, 0.15);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .card-media {
+      position: relative;
+      width: calc(100% - 32px);
+      max-width: 100%;
+      height: 280px;
+      margin: 16px 16px 4px 16px;
+      overflow: hidden;
+      background-color: #0f172a;
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+    }
+
+    .card-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .card-exibicao:hover .card-media img {
+      transform: scale(1.03);
+    }
+
+    .card-media-placeholder {
+      width: calc(100% - 32px);
+      max-width: 100%;
+      height: 90px;
+      margin: 16px 16px 4px 16px;
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      font-weight: 600;
+      border-radius: var(--radius-md);
+      border: 1.5px dashed #cbd5e1;
+      gap: 6px;
+    }
+
+    .card-body {
+      padding: 0 20px 20px 20px;
+    }
+
+    .info-group {
+      margin-bottom: 10px;
+      background: #f8fafc;
+      border: 1px solid #f1f5f9;
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+      transition: var(--transition);
+    }
+
+    .info-group:hover {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+    }
+
+    .info-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .info-label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .info-value {
+      font-size: 0.95rem;
+      color: #0f172a;
+      font-weight: 700;
+      word-break: break-all;
+    }
+
+    .info-link {
+      font-size: 0.9rem;
+      color: var(--primary-color);
+      text-decoration: none;
+      font-weight: 700;
+      word-break: break-all;
+      display: inline-block;
+      transition: var(--transition);
+    }
+
+    .info-link:hover {
+      color: var(--primary-hover);
+      text-decoration: underline;
+    }
+
+    .card-quick-actions {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      width: 100%;
+      margin-top: 16px;
+    }
+
+    .btn-quick-action {
+      width: 100%;
+      padding: 10px 6px;
+      border-radius: var(--radius-md);
+      font-size: 0.8rem;
+      font-weight: 750;
+      border: 1px solid transparent;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      text-decoration: none;
+      transition: var(--transition);
+    }
+
+    .btn-copy-celular {
+      background-color: #f0fdf4;
+      color: #15803d;
+      border-color: rgba(22, 163, 74, 0.15);
+    }
+    .btn-copy-celular:hover {
+      background-color: #dcfce7;
+      border-color: rgba(22, 163, 74, 0.3);
+    }
+
+    .btn-copy-link {
+      background-color: #f5f3ff;
+      color: #6d28d9;
+      border-color: rgba(124, 58, 237, 0.15);
+    }
+    .btn-copy-link:hover {
+      background-color: #ede9fe;
+      border-color: rgba(124, 58, 237, 0.3);
+    }
+
+    .btn-copy-id {
+      background-color: #f8fafc;
+      color: #334155;
+      border: 1px solid #e2e8f0;
+    }
+    .btn-copy-id:hover {
+      background-color: #f1f5f9;
+      border-color: #cbd5e1;
+    }
+
+    .btn-copy-pix {
+      background-color: #ecfeff;
+      color: #0369a1;
+      border-color: rgba(14, 116, 144, 0.15);
+    }
+    .btn-copy-pix:hover {
+      background-color: #cffafe;
+      border-color: rgba(14, 116, 144, 0.3);
+    }
+
+    .btn-copy-afiliado {
+      background-color: #fff7ed;
+      color: #c2410c;
+      border-color: rgba(234, 88, 12, 0.15);
+    }
+    .btn-copy-afiliado:hover {
+      background-color: #ffedd5;
+      border-color: rgba(234, 88, 12, 0.3);
+    }
+
+    .btn-share-card {
+      background: linear-gradient(135deg, #eef2f6 0%, #cbd5e1 100%);
+      color: #0f172a;
+      border: 1px solid #94a3b8;
+    }
+    .btn-share-card:hover {
+      background: linear-gradient(135deg, #cbd5e1 0%, #94a3b8 100%);
+    }
+
+    .btn-span-2 {
+      grid-column: span 2;
+    }
+
+    .backup-actions-container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      width: 100%;
+    }
+
+    .backup-card {
+      background: var(--card-bg);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .backup-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .backup-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .backup-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    /* Indicador Visual da Quota de Armazenamento Local */
+    .storage-indicator-wrapper {
+      margin-top: 4px;
+      background: #f1f5f9;
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .storage-text-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 6px;
+    }
+
+    .storage-bar-bg {
+      width: 100%;
+      height: 8px;
+      background: #cbd5e1;
+      border-radius: 9999px;
+      overflow: hidden;
+    }
+
+    .storage-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--primary-color);
+      border-radius: 9999px;
+      transition: width 0.4s ease;
+    }
+
+    .btn-backup-action {
+      width: 100%;
+      padding: 14px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      border: none;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      color: #ffffff;
+      transition: var(--transition);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-backup-action:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-backup-action:active {
+      transform: translateY(1px);
+    }
+
+    .btn-backup-import {
+      background-color: var(--primary-color);
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+    }
+    .btn-backup-import:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .btn-backup-export {
+      background-color: var(--success-color);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+    }
+    .btn-backup-export:hover {
+      background-color: var(--success-hover);
+    }
+
+    .btn-backup-clear {
+      background-color: var(--danger-color);
+      box-shadow: 0 4px 12px rgba(239, 68, 110, 0.2);
+    }
+    .btn-backup-clear:hover {
+      background-color: var(--danger-hover);
+    }
+
+    .btn-backup-install {
+      background-color: var(--warning-color);
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+    }
+    .btn-backup-install:hover {
+      background-color: var(--warning-hover);
+    }
+    .btn-backup-install:disabled {
+      background-color: #cbd5e1;
+      color: #64748b;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+
+    /* Estilos das Abas de Instalação PWA */
+    .install-tabs {
+      display: flex;
+      gap: 8px;
+      margin: 16px 0;
+      border-bottom: 2.5px solid #e2e8f0;
+      padding-bottom: 8px;
+    }
+
+    .install-tab-btn {
+      flex: 1;
+      padding: 10px 6px;
+      font-size: 0.8rem;
+      font-weight: 750;
+      border: none;
+      background: #f1f5f9;
+      color: var(--text-muted);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .install-tab-btn.active {
+      background: var(--primary-color);
+      color: #ffffff;
+    }
+
+    .install-instruction-content {
+      display: none;
+      text-align: left;
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+
+    .install-instruction-content.active {
+      display: block;
+    }
+
+    .toast-notificacao {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-100px);
+      background: #0f172a;
+      color: #ffffff;
+      padding: 12px 24px;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-lg);
+      font-weight: 600;
+      font-size: 0.9rem;
+      z-index: 10000;
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      text-align: center;
+      max-width: 90%;
+      pointer-events: none;
+    }
+
+    .toast-notificacao.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 10001;
+      padding: 16px;
+    }
+
+    .modal-overlay.show {
+      display: flex;
+    }
+
+    .modal-box {
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      max-width: 440px;
+      width: 100%;
+      box-shadow: var(--shadow-lg);
+      text-align: center;
+      animation: zoomIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes zoomIn {
+      from {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .modal-box h4 {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 12px;
+    }
+
+    .modal-box p {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    .modal-actions button {
+      padding: 12px 20px;
+      border-radius: var(--radius-md);
+      font-size: 0.9rem;
+      font-weight: 750;
+      cursor: pointer;
+      border: none;
+      transition: var(--transition);
+      flex: 1;
+    }
+
+    .btn-fechar {
+      background-color: #f1f5f9;
+      color: #475569;
+    }
+
+    .btn-fechar:hover {
+      background-color: #e2e8f0;
+    }
+
+    .btn-acao-destrutiva {
+      background-color: var(--danger-color);
+      color: white;
+    }
+
+    .btn-acao-destrutiva:hover {
+      background-color: var(--danger-hover);
+    }
+
+    .menu-dock {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% - 32px);
+      max-width: 460px;
+      height: 68px;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      background: rgba(15, 23, 42, 0.88);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-radius: 20px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      z-index: 9999;
+    }
+
+    .menu-dock button {
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, 0.65);
+      text-decoration: none;
+      text-align: center;
+      font-size: 0.72rem;
+      font-weight: 600;
+      flex: 1;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 2px;
+      cursor: pointer;
+      transition: var(--transition);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .menu-dock button:hover, 
+    .menu-dock button.active {
+      color: #ffffff;
+      outline: none;
+    }
+
+    .menu-dock button.active {
+      font-weight: 800;
+      transform: scale(1.05);
+    }
+
+    .menu-dock-icon {
+      font-size: 1.25rem;
+      margin-bottom: 2px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Alerta Toast Independente -->
+  <div id="toastGlobal" class="toast-notificacao" role="alert">Mensagem</div>
+
+  <!-- Modal Customizado de Confirmação de Exclusão Individual -->
+  <div id="modalExcluirConfirm" class="modal-overlay" aria-hidden="true">
+    <div class="modal-box">
+      <h4 id="modalExcluirTitulo">Confirmar Eliminação</h4>
+      <p id="modalExcluirMensagem">Deseja realmente eliminar este registo permanentemente?</p>
+      <div class="modal-actions">
+        <button class="btn-fechar" onclick="fecharModalConfirmacao()">Cancelar</button>
+        <button id="btnConfirmarExclusaoReal" class="btn-acao-destrutiva">Eliminar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Customizado de Confirmação de Limpar Banco -->
+  <div id="modalLimparConfirm" class="modal-overlay" aria-hidden="true">
+    <div class="modal-box">
+      <h4 style="color: var(--danger-color)">⚠️ Limpar Todos os Dados</h4>
+      <p>Atenção! Esta ação irá excluir permanentemente todos os registros salvos neste aplicativo. Não será possível recuperá-los de outra forma.</p>
+      <div class="modal-actions">
+        <button class="btn-fechar" onclick="fecharModalLimpar()">Cancelar</button>
+        <button onclick="confirmarLimparBanco()" class="btn-acao-destrutiva">Limpar Tudo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Instruções de Instalação Manual (Aprimorado e Dinâmico por Abas) -->
+  <div id="modalInstalarInstrucoes" class="modal-overlay" aria-hidden="true">
+    <div class="modal-box">
+      <h4>📲 Instalação no Dispositivo</h4>
+      <p style="text-align: left; font-size: 0.9rem; margin-bottom: 12px; line-height: 1.4;">
+        Para segurança do seu aparelho, os navegadores só permitem a instalação nativa sob conexão segura <strong>(HTTPS)</strong> ou rodando localmente.
+      </p>
+
+      <!-- Seleção de Sistema Operacional por Abas -->
+      <div class="install-tabs">
+        <button id="tabBtn-ios" class="install-tab-btn" onclick="mudarTabInstalacao('ios')">🍏 iPhone / iOS</button>
+        <button id="tabBtn-android" class="install-tab-btn" onclick="mudarTabInstalacao('android')">🤖 Android</button>
+        <button id="tabBtn-desktop" class="install-tab-btn" onclick="mudarTabInstalacao('desktop')">💻 Computador</button>
+      </div>
+      
+      <!-- Conteúdo iOS -->
+      <div id="instrucao-ios" class="install-instruction-content">
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 14px; border-radius: var(--radius-md); font-size: 0.85rem; margin-bottom: 20px;">
+          <ol style="margin-left: 16px; display: flex; flex-direction: column; gap: 8px;">
+            <li>Abra este site utilizando o navegador original <strong>Safari</strong>.</li>
+            <li>Toque no botão de <strong>Compartilhar</strong> <span style="font-size: 1.1rem;">📤</span> (ícone com uma seta para cima).</li>
+            <li>Role a lista para baixo e toque em <strong>"Adicionar à Tela de Início"</strong>.</li>
+            <li>Pronto! Ele será aberto em tela cheia como um aplicativo real.</li>
+          </ol>
+        </div>
+      </div>
+
+      <!-- Conteúdo Android -->
+      <div id="instrucao-android" class="install-instruction-content">
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 14px; border-radius: var(--radius-md); font-size: 0.85rem; margin-bottom: 20px;">
+          <ol style="margin-left: 16px; display: flex; flex-direction: column; gap: 8px;">
+            <li>No navegador Google Chrome, toque no botão dos <strong>três pontinhos</strong> <span style="font-size: 1.1rem;">⋮</span> no canto superior direito.</li>
+            <li>Selecione a opção <strong>"Instalar aplicativo"</strong> ou <strong>"Adicionar à tela inicial"</strong>.</li>
+            <li>Confirme tocando no botão "Instalar".</li>
+          </ol>
+        </div>
+      </div>
+
+      <!-- Conteúdo Desktop -->
+      <div id="instrucao-desktop" class="install-instruction-content">
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 14px; border-radius: var(--radius-md); font-size: 0.85rem; margin-bottom: 20px;">
+          <ol style="margin-left: 16px; display: flex; flex-direction: column; gap: 8px;">
+            <li>Na barra de endereços do Chrome ou Edge, clique no ícone de <strong>Monitor com uma Seta</strong> <span style="font-size: 1.1rem;">🖥️</span>.</li>
+            <li>Se preferir, clique no botão de <strong>três pontos</strong> e selecione <strong>"Instalar Gestor..."</strong>.</li>
+            <li>O aplicativo passará a ser executado em uma janela isolada com alto desempenho.</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-fechar" onclick="fecharModalInstalarInstrucoes()">Entendido</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <!-- ==========================================
+         VISUALIZAÇÃO: HOME
+         ========================================== -->
+    <section id="sec-home" class="view-section active">
+      <h1>🍀 Boa Sorte!</h1>
+      <p>Que o seu dia seja repleto de grandes conquistas.</p>
+    </section>
+
+    <!-- ==========================================
+         VISUALIZAÇÃO: LISTAGEM PRONTAS
+         ========================================== -->
+    <section id="sec-prontas" class="view-section">
+      <h2>Cadastros Disponíveis</h2>
+
+      <!-- Painel de Pesquisa Avançado -->
+      <div class="search-box-wrapper">
+        <div class="search-input-group">
+          <span class="search-input-icon">🔍</span>
+          <input type="text" id="inputPesquisa" placeholder="Pesquisar por ID, celular, Pix..." oninput="filtrarCartoesProntas()">
+        </div>
+        <div class="filter-row">
+          <select id="filtroAfiliadoCards" onchange="filtrarCartoesProntas()">
+            <option value="">Todos os Afiliados</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="listaCompleta"></div>
+    </section>
+
+    <!-- ==========================================
+         VISUALIZAÇÃO: CADASTRO E EDIÇÃO
+         ========================================== -->
+    <section id="sec-cadastro" class="view-section">
+      <h2 id="tituloCadastroSecao">Novo Cadastro</h2>
+
+      <form id="formCadastro">
+        <input type="tel" id="celular" inputmode="numeric" placeholder="Celular" required autocomplete="tel">
+        <input type="text" id="id" inputmode="numeric" pattern="[0-9]*" placeholder="ID" required>
+        <input type="text" id="pix" placeholder="Chave Pix (Opcional)">
+        <input type="url" id="link" placeholder="Endereço Link" required autocomplete="url">
+        
+        <!-- Drop Box de Celulares Cadastrados para Selecionar Afiliado -->
+        <select id="afiliado">
+          <option value="">Selecione um Afiliado (Celular)</option>
+        </select>
+        
+        <!-- Visualização Dinâmica do Preview no Formulário -->
+        <div id="previewWrapper" class="form-image-preview-wrapper">
+          <img id="imagePreviewElement" src="" alt="Pré-visualização do ficheiro">
+          <button type="button" class="btn-remove-preview" onclick="removerImagemPreview()" title="Remover imagem">✕</button>
+        </div>
+
+        <div class="file-input-wrapper">
+          <input type="file" id="imagem" accept="image/*" onchange="manipularSelecaoImagem(event)">
+        </div>
+        
+        <button type="submit" id="btnSalvar">Salvar Cadastro</button>
+        <button type="button" id="btnCancelarEdicao" class="btn-cancelar-edicao" style="display: none;" onclick="cancelarFluxoEdicao()">
+          Cancelar Edição
+        </button>
+      </form>
+
+      <hr>
+
+      <h3>Gestão de IDs Cadastrados</h3>
+      <div id="listaIds"></div>
+    </section>
+
+    <!-- ==========================================
+         VISUALIZAÇÃO: BACKUP DE DADOS
+         ========================================== -->
+    <section id="sec-backup" class="view-section">
+      <h2>Backup & Instalação</h2>
+      <p>Importe, exporte ou remova os seus dados e instale o aplicativo na tela inicial do seu aparelho.</p>
+
+      <div class="backup-actions-container">
+        
+        <!-- Painel Instalação PWA -->
+        <div class="backup-card">
+          <div class="backup-header">
+            <span style="font-size: 1.5rem;">📲</span>
+            <div class="backup-title">Instalar Aplicativo</div>
+          </div>
+          <div class="backup-desc">Adicione este aplicativo diretamente à tela inicial do seu celular ou computador para acessá-lo de forma rápida e nativa.</div>
+          <button id="btnInstalarPWA" onclick="fluxoInstalarApp()" class="btn-backup-action btn-backup-install">
+            Instalar na Tela Inicial
+          </button>
+        </div>
+
+        <!-- Painel de Quota de Memória Local -->
+        <div class="backup-card">
+          <div class="backup-header">
+            <span style="font-size: 1.5rem;">💾</span>
+            <div class="backup-title">Armazenamento Local</div>
+          </div>
+          <div class="backup-desc">O limite padrão seguro de persistência no seu navegador é de cerca de 5 MB.</div>
+          
+          <div class="storage-indicator-wrapper">
+            <div class="storage-text-row">
+              <span>Uso do Sistema:</span>
+              <span id="storageSizeLabel">0.00 KB / 5.00 MB</span>
+            </div>
+            <div class="storage-bar-bg">
+              <div id="storageBarFill" class="storage-bar-fill"></div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Painel Importar -->
+        <div class="backup-card">
+          <div class="backup-header">
+            <span style="font-size: 1.5rem;">📥</span>
+            <div class="backup-title">Importar Backup</div>
+          </div>
+          <div class="backup-desc">Selecione o arquivo de dados salvos anteriormente (formato .json) para restaurar sua lista.</div>
+          
+          <div class="file-input-wrapper">
+            <input type="file" id="importArquivoInput" accept=".json">
+          </div>
+          <button onclick="fluxoImportarArquivo()" class="btn-backup-action btn-backup-import">
+            Confirmar e Carregar
+          </button>
+        </div>
+
+        <!-- Painel Exportar -->
+        <div class="backup-card">
+          <div class="backup-header">
+            <span style="font-size: 1.5rem;">📤</span>
+            <div class="backup-title">Exportar Cadastros</div>
+          </div>
+          <div class="backup-desc">Gere e baixe um arquivo estruturado com todos os dados cadastrados no aplicativo.</div>
+          <button onclick="fluxoExportarArquivo()" class="btn-backup-action btn-backup-export">
+            Salvar Arquivo de Backup
+          </button>
+        </div>
+
+        <!-- Painel Limpar -->
+        <div class="backup-card">
+          <div class="backup-header">
+            <span style="font-size: 1.5rem; color: var(--danger-color);">⚠️</span>
+            <div class="backup-title" style="color: var(--danger-color);">Limpar Banco</div>
+          </div>
+          <div class="backup-desc">Apague completamente e de forma irreversível todos os cadastros registrados localmente.</div>
+          <button onclick="pedirConfirmacaoLimpar()" class="btn-backup-action btn-backup-clear">
+            Apagar Tudo Permanentemente
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ==========================================
+       MENU DE NAVEGAÇÃO INTERATIVO
+       ========================================== -->
+  <nav class="menu-dock">
+    <button onclick="navegarAbas('home')" id="btnNav-home" class="active">
+      <span class="menu-dock-icon">🏠</span>Home
+    </button>
+    <button onclick="navegarAbas('prontas')" id="btnNav-prontas">
+      <span class="menu-dock-icon">📄</span>Prontas
+    </button>
+    <button onclick="navegarAbas('cadastro')" id="btnNav-cadastro">
+      <span class="menu-dock-icon">➕</span>Cadastro
+    </button>
+    <button onclick="navegarAbas('backup')" id="btnNav-backup">
+      <span class="menu-dock-icon">💾</span>Backup
+    </button>
+  </nav>
+
+  <!-- ==========================================
+       LÓGICA JAVASCRIPT OTIMIZADA
+       ========================================== -->
+  <script>
+    // Recuperação de dados com tratamento contra falhas
+    let dados = [];
+    try {
+      dados = JSON.parse(localStorage.getItem("cadastros")) || [];
+    } catch (err) {
+      console.error("Falha ao recuperar base de dados:", err);
+      dados = [];
+    }
+
+    let editandoIdx = -1;
+    let exclusaoAlvoIdx = null;
+    let deferredPrompt = null; // Variável para capturar o evento de instalação do PWA
+    let imagemBase64FormTemp = ""; // Armazena a imagem ativa do formulário antes de salvar
+
+    // Componentes de Interface
+    const toast = document.getElementById("toastGlobal");
+    const modalExcluir = document.getElementById("modalExcluirConfirm");
+    const modalLimpar = document.getElementById("modalLimparConfirm");
+    const modalInstalar = document.getElementById("modalInstalarInstrucoes");
+    const btnConfirmarExclusaoReal = document.getElementById("btnConfirmarExclusaoReal");
+    const formCadastro = document.getElementById("formCadastro");
+    const inputCelular = document.getElementById("celular");
+    const inputId = document.getElementById("id");
+
+    // Ciclo de Vida Inicial
+    window.addEventListener('DOMContentLoaded', () => {
+      configurarTratamentoInputs();
+      atualizarListagens();
+      verificarSinalizadorPWA();
+      detectarDispositivoSistemico();
+      calcularConsumoEspaco();
+    });
+
+    // Monitoramento do evento nativo de instalação do PWA
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      
+      const btnInstalar = document.getElementById("btnInstalarPWA");
+      if (btnInstalar) {
+        if (!isAppInstalado()) {
+          btnInstalar.innerHTML = "⚡ Instalar Agora";
+          btnInstalar.style.backgroundColor = "var(--success-color)";
+          btnInstalar.disabled = false;
+        }
+      }
+    });
+
+    // Escuta para saber se o app foi instalado com sucesso
+    window.addEventListener('appinstalled', (evt) => {
+      emitirNotificacao("🎉 Aplicativo instalado com sucesso na sua tela inicial!");
+      deferredPrompt = null;
+      verificarSinalizadorPWA();
+    });
+
+    // Verifica se o aplicativo já está rodando de forma standalone (PWA instalado)
+    function isAppInstalado() {
+      return (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true);
+    }
+
+    // Monitora e atualiza a UI se o aplicativo já estiver instalado
+    function verificarSinalizadorPWA() {
+      const isSecure = window.location.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      const isIFrame = window.self !== window.top;
+      
+      console.log("[PWA Status]: Contexto Seguro:", isSecure, " | Dentro de Iframe:", isIFrame, " | Já Instalado:", isAppInstalado());
+
+      const btnInstalar = document.getElementById("btnInstalarPWA");
+      if (btnInstalar && isAppInstalado()) {
+        btnInstalar.innerHTML = "✅ Aplicativo Instalado";
+        btnInstalar.style.backgroundColor = "#64748b";
+        btnInstalar.disabled = true;
+      }
+    }
+
+    // Detecta o sistema operacional do usuário para abrir a aba correta no modal
+    function detectarDispositivoSistemico() {
+      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+      
+      if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+        mudarTabInstalacao('ios');
+      } else if (/android/i.test(userAgent)) {
+        mudarTabInstalacao('android');
+      } else {
+        mudarTabInstalacao('desktop');
+      }
+    }
+
+    // Função para alternar as abas informativas de instalação manual
+    function mudarTabInstalacao(plataforma) {
+      document.querySelectorAll('.install-tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.install-instruction-content').forEach(content => content.classList.remove('active'));
+
+      const btnAtivo = document.getElementById(`tabBtn-${plataforma}`);
+      const conteudoAtivo = document.getElementById(`instrucao-${plataforma}`);
+
+      if (btnAtivo) btnAtivo.classList.add('active');
+      if (conteudoAtivo) conteudoAtivo.classList.add('active');
+    }
+
+    // Executa o prompt de instalação ou mostra as instruções se indisponível
+    function fluxoInstalarApp() {
+      if (isAppInstalado()) {
+        emitirNotificacao("O aplicativo já está instalado no seu aparelho!");
+        return;
+      }
+
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((resultado) => {
+          if (resultado.outcome === 'accepted') {
+            emitirNotificacao("Obrigado por instalar o aplicativo!");
+          } else {
+            emitirNotificacao("Instalação cancelada.");
+          }
+          deferredPrompt = null;
+        });
+      } else {
+        abrirModalInstalarInstrucoes();
+      }
+    }
+
+    function abrirModalInstalarInstrucoes() {
+      modalInstalar.classList.add("show");
+      modalInstalar.setAttribute("aria-hidden", "false");
+    }
+
+    function fecharModalInstalarInstrucoes() {
+      modalInstalar.classList.remove("show");
+      modalInstalar.setAttribute("aria-hidden", "true");
+    }
+
+    // Sistema de Notificações Toast Não-Bloqueante
+    function emitirNotificacao(texto, tempo = 2500) {
+      toast.innerText = texto;
+      toast.classList.add("show");
+      
+      if (window.toastTimeout) clearTimeout(window.toastTimeout);
+      
+      window.toastTimeout = setTimeout(() => {
+        toast.classList.remove("show");
+      }, tempo);
+    }
+
+    // Modal para Confirmação Segura de Eliminações individuais (CORRIGIDO)
+    function pedirConfirmacaoEliminar(idx) {
+      exclusaoAlvoIdx = idx;
+      const idRegistro = dados[idx] ? dados[idx].id : '';
+      
+      const elemMsg = document.getElementById("modalExcluirMensagem");
+      if (elemMsg) {
+        elemMsg.innerText = `Tem a certeza que deseja eliminar o registo ID: ${idRegistro} permanentemente?`;
+      }
+      
+      modalExcluir.classList.add("show");
+      modalExcluir.setAttribute("aria-hidden", "false");
+    }
+
+    function fecharModalConfirmacao() {
+      modalExcluir.classList.remove("show");
+      modalExcluir.setAttribute("aria-hidden", "true");
+      exclusaoAlvoIdx = null;
+    }
+
+    btnConfirmarExclusaoReal.onclick = function() {
+      if (exclusaoAlvoIdx !== null && dados[exclusaoAlvoIdx]) {
+        const idEliminado = dados[exclusaoAlvoIdx].id;
+        dados.splice(exclusaoAlvoIdx, 1);
+        guardarLocalStore();
+        atualizarListagens();
+        fecharModalConfirmacao();
+        emitirNotificacao(`ID ${idEliminado} foi removido.`);
+        
+        if (editandoIdx === exclusaoAlvoIdx) {
+          cancelarFluxoEdicao();
+        }
+      }
+    };
+
+    // Modais para Confirmação de exclusão total do banco (Limpar)
+    function pedirConfirmacaoLimpar() {
+      if (dados.length === 0) {
+        emitirNotificacao("Não existem dados cadastrados para limpar.");
+        return;
+      }
+      modalLimpar.classList.add("show");
+      modalLimpar.setAttribute("aria-hidden", "false");
+    }
+
+    function fecharModalLimpar() {
+      modalLimpar.classList.remove("show");
+      modalLimpar.setAttribute("aria-hidden", "true");
+    }
+
+    function confirmarLimparBanco() {
+      dados = [];
+      guardarLocalStore();
+      atualizarListagens();
+      fecharModalLimpar();
+      cancelarFluxoEdicao();
+      emitirNotificacao("Todos os dados foram limpos do dispositivo!");
+      navegarAbas('home');
+    }
+
+    // Navegação Reativa Sem Redirecionamentos (SPA)
+    function navegarAbas(secaoDestino) {
+      const secoes = document.querySelectorAll('.view-section');
+      const botoes = document.querySelectorAll('.menu-dock button');
+
+      secoes.forEach(sec => {
+        sec.classList.remove('active');
+      });
+
+      botoes.forEach(btn => {
+        btn.classList.remove('active');
+      });
+
+      const elementSecao = document.getElementById(`sec-${secaoDestino}`);
+      const elementBotao = document.getElementById(`btnNav-${secaoDestino}`);
+
+      if (elementSecao && elementBotao) {
+        elementSecao.classList.add('active');
+        elementBotao.classList.add('active');
+      }
+
+      if (secaoDestino === 'prontas') {
+        const inputPesquisa = document.getElementById("inputPesquisa");
+        if (inputPesquisa) inputPesquisa.value = "";
+        atualizarDropdownFiltroCards();
+        renderizarCartoesProntas();
+      } else if (secaoDestino === 'cadastro') {
+        renderizarIdsSimplificados();
+      } else if (secaoDestino === 'backup') {
+        verificarSinalizadorPWA();
+        calcularConsumoEspaco();
+      }
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Máscaras de digitação em tempo de execução
+    function configurarTratamentoInputs() {
+      if (inputCelular) {
+        inputCelular.addEventListener("input", (e) => {
+          let v = e.target.value.replace(/\D/g, ""); // Apenas dígitos
+          v = v.substring(0, 11);
+          
+          let formatado = "";
+          if (v.length > 0) {
+            formatado += "(" + v.substring(0, 2);
+          }
+          if (v.length > 2) {
+            formatado += ") " + v.substring(2, 3);
+          }
+          if (v.length > 3) {
+            formatado += " " + v.substring(3, 7);
+          }
+          if (v.length > 7) {
+            formatado += "-" + v.substring(7, 11);
+          }
+          e.target.value = formatado;
+        });
+      }
+
+      if (inputId) {
+        inputId.addEventListener("input", (e) => {
+          e.target.value = e.target.value.replace(/\D/g, "");
+        });
+      }
+    }
+
+    // Manipulação e Preview de Imagem em Tempo de Execução
+    async function manipularSelecaoImagem(event) {
+      const input = event.target;
+      if (input.files && input.files[0]) {
+        try {
+          // Compacta e converte
+          imagemBase64FormTemp = await converterImagemCompacta(input.files[0]);
+          exibirPreviewForm(imagemBase64FormTemp);
+        } catch (erro) {
+          console.error("Falha no processamento do arquivo de imagem:", erro);
+          emitirNotificacao("Erro ao carregar imagem.");
+          removerImagemPreview();
+        }
+      }
+    }
+
+    function exibirPreviewForm(base64) {
+      const wrapper = document.getElementById("previewWrapper");
+      const img = document.getElementById("imagePreviewElement");
+      if (wrapper && img && base64) {
+        img.src = base64;
+        wrapper.style.display = "block";
+      }
+    }
+
+    function removerImagemPreview() {
+      imagemBase64FormTemp = "";
+      const wrapper = document.getElementById("previewWrapper");
+      const input = document.getElementById("imagem");
+      if (wrapper) wrapper.style.display = "none";
+      if (input) input.value = "";
+    }
+
+    // Submissão Otimizada do Formulário com Compressão e Prevenção de perda de dados (Sugestão 5 integrada)
+    if (formCadastro) {
+      formCadastro.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const celular = document.getElementById("celular").value;
+        const id = document.getElementById("id").value;
+        const pix = document.getElementById("pix") ? document.getElementById("pix").value : "";
+        const link = document.getElementById("link").value;
+        const afiliado = document.getElementById("afiliado") ? document.getElementById("afiliado").value : "";
+
+        const novoRegisto = {
+          celular,
+          id,
+          pix,
+          link,
+          afiliado,
+          imagem: imagemBase64FormTemp // Usa a imagem do preview ou vazio
+        };
+
+        if (editandoIdx === -1) {
+          const conflito = dados.some(d => d.id === id);
+          if (conflito) {
+            emitirNotificacao("Erro: Este ID já se encontra registado.");
+            return;
+          }
+          dados.push(novoRegisto);
+          emitirNotificacao("Registo gravado!");
+        } else {
+          const conflito = dados.some((d, idx) => d.id === id && idx !== editandoIdx);
+          if (conflito) {
+            emitirNotificacao("Erro: Este ID já está a ser utilizado.");
+            return;
+          }
+          dados[editandoIdx] = novoRegisto;
+          emitirNotificacao("Registo atualizado!");
+          fecharEstadoEdicaoForm();
+        }
+
+        // Persistência com rollback seguro contra estouro (Sugestão 3 integrada)
+        guardarLocalStore();
+        
+        // Limpeza física total do formulário e preview (Sugestão 5 integrada)
+        formCadastro.reset();
+        removerImagemPreview();
+        atualizarListagens();
+      });
+    }
+
+    // Persistência robusta local com Rollback automático
+    function guardarLocalStore() {
+      try {
+        localStorage.setItem("cadastros", JSON.stringify(dados));
+        calcularConsumoEspaco();
+      } catch (e) {
+        console.error("Estouro de armazenamento local detectado:", e);
+        emitirNotificacao("Erro crítico: Limite de armazenamento excedido! Operação cancelada.");
+        // Rollback imediato reimportando os dados antigos preservados em disco
+        try {
+          dados = JSON.parse(localStorage.getItem("cadastros")) || [];
+          atualizarListagens();
+        } catch (err) {
+          console.error("Falha ao reverter base de dados em memória:", err);
+        }
+      }
+    }
+
+    // Calcula de forma fidedigna o consumo de espaço no LocalStorage
+    function calcularConsumoEspaco() {
+      try {
+        let totalBytes = 0;
+        for (let key in localStorage) {
+          if (localStorage.hasOwnProperty(key)) {
+            // Cada caractere String em JS consome 2 bytes (codificação UTF-16)
+            totalBytes += (localStorage[key].length + key.length) * 2;
+          }
+        }
+        
+        const megabytes = totalBytes / (1024 * 1024);
+        const limiteDesejado = 5.0; // 5MB limite aproximado padrão de navegadores móveis
+        const percentual = Math.min((megabytes / limiteDesejado) * 100, 100);
+
+        const lbl = document.getElementById("storageSizeLabel");
+        const bar = document.getElementById("storageBarFill");
+
+        if (lbl && bar) {
+          lbl.innerText = `${megabytes.toFixed(2)} MB / ${limiteDesejado.toFixed(2)} MB`;
+          bar.style.width = `${percentual}%`;
+          
+          if (percentual > 85) {
+            bar.style.backgroundColor = "var(--danger-color)";
+          } else if (percentual > 60) {
+            bar.style.backgroundColor = "var(--warning-color)";
+          } else {
+            bar.style.backgroundColor = "var(--primary-color)";
+          }
+        }
+      } catch (err) {
+        console.error("Erro ao estimar quota do sistema:", err);
+      }
+    }
+
+    // Atualiza dinamicamente as opções do drop box de afiliados
+    function atualizarDropdownAfiliados() {
+      const selectAfiliado = document.getElementById("afiliado");
+      if (!selectAfiliado) return;
+
+      const valorSelecionado = selectAfiliado.value;
+
+      const celularesUnicos = [...new Set(dados.map(d => d.celular).filter(Boolean))];
+
+      selectAfiliado.innerHTML = '<option value="">Selecione um Afiliado (Celular)</option>';
+      
+      celularesUnicos.forEach(cel => {
+        const opt = document.createElement("option");
+        opt.value = cel;
+        opt.textContent = cel;
+        selectAfiliado.appendChild(opt);
+      });
+
+      if (celularesUnicos.includes(valorSelecionado)) {
+        selectAfiliado.value = valorSelecionado;
+      }
+    }
+
+    // Popula o seletor de filtros dinâmicos na aba "Prontas"
+    function atualizarDropdownFiltroCards() {
+      const filtroSel = document.getElementById("filtroAfiliadoCards");
+      if (!filtroSel) return;
+
+      const valorAtivo = filtroSel.value;
+      const celularesUnicos = [...new Set(dados.map(d => d.celular).filter(Boolean))];
+
+      filtroSel.innerHTML = '<option value="">Todos os Afiliados</option>';
+      celularesUnicos.forEach(cel => {
+        const opt = document.createElement("option");
+        opt.value = cel;
+        opt.textContent = cel;
+        filtroSel.appendChild(opt);
+      });
+
+      if (celularesUnicos.includes(valorAtivo)) {
+        filtroSel.value = valorAtivo;
+      }
+    }
+
+    // Atualização de dados assíncrona/reativa
+    function atualizarListagens() {
+      atualizarDropdownAfiliados();
+      atualizarDropdownFiltroCards();
+      renderizarIdsSimplificados();
+      renderizarCartoesProntas();
+    }
+
+    // Renderização simplificada de gestão de cadastros
+    function renderizarIdsSimplificados() {
+      const listaIdsContainer = document.getElementById("listaIds");
+      if (!listaIdsContainer) return;
+
+      listaIdsContainer.innerHTML = "";
+
+      if (dados.length === 0) {
+        listaIdsContainer.innerHTML = `<div class="sem-dados">Nenhum ID cadastrado ainda.</div>`;
+        return;
+      }
+
+      dados.forEach((reg, idx) => {
+        listaIdsContainer.innerHTML += `
+          <div class="card card-gestao">
+            <div>
+              <span class="badge-id">ID: ${reg.id}</span>
+            </div>
+            <div class="card-actions-row">
+              <button class="btn-editar" onclick="iniciarEdicaoFluxo(${idx})">✏️ Editar</button>
+              <button class="btn-excluir" onclick="pedirConfirmacaoEliminar(${idx})">🗑️ Excluir</button>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    // Ativação do fluxo de Edição no formulário
+    window.iniciarEdicaoFluxo = function(idx) {
+      if (!dados[idx]) return;
+
+      editandoIdx = idx;
+      
+      document.getElementById("celular").value = dados[idx].celular || "";
+      document.getElementById("id").value = dados[idx].id || "";
+      if (document.getElementById("pix")) {
+        document.getElementById("pix").value = dados[idx].pix || "";
+      }
+      document.getElementById("link").value = dados[idx].link || "";
+      
+      atualizarDropdownAfiliados();
+      if (document.getElementById("afiliado")) {
+        document.getElementById("afiliado").value = dados[idx].afiliado || "";
+      }
+
+      // Sincroniza a imagem de pré-visualização se houver uma ativa
+      if (dados[idx].imagem) {
+        imagemBase64FormTemp = dados[idx].imagem;
+        exibirPreviewForm(imagemBase64FormTemp);
+      } else {
+        removerImagemPreview();
+      }
+
+      // Modificações de UI para Edição
+      document.getElementById("tituloCadastroSecao").innerText = "Editar Cadastro";
+      const btn = document.getElementById("btnSalvar");
+      btn.innerText = "Atualizar Cadastro";
+      btn.style.backgroundColor = "var(--warning-color)";
+      document.getElementById("btnCancelarEdicao").style.display = "block";
+
+      if (inputCelular) {
+        inputCelular.dispatchEvent(new Event("input"));
+      }
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    // Fechar estado gráfico de edição
+    function fecharEstadoEdicaoForm() {
+      editandoIdx = -1;
+      document.getElementById("tituloCadastroSecao").innerText = "Novo Cadastro";
+      const btn = document.getElementById("btnSalvar");
+      btn.innerText = "Salvar Cadastro";
+      btn.style.backgroundColor = "var(--primary-color)";
+      document.getElementById("btnCancelarEdicao").style.display = "none";
+    }
+
+    window.cancelarFluxoEdicao = function() {
+      fecharEstadoEdicaoForm();
+      formCadastro.reset();
+      removerImagemPreview();
+      emitirNotificacao("Edição cancelada.");
+    };
+
+    // Compressão de imagens usando Canvas
+    function converterImagemCompacta(arquivo) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(arquivo);
+        reader.onload = function(e) {
+          const img = new Image();
+          img.src = e.target.result;
+          img.onload = function() {
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+
+            const LIMITE_MAX_LARGURA = 480;
+            const LIMITE_MAX_ALTURA = 640;
+            let width = img.width;
+            let height = img.height;
+
+            if (width > height) {
+              if (width > LIMITE_MAX_LARGURA) {
+                height *= LIMITE_MAX_LARGURA / width;
+                width = LIMITE_MAX_LARGURA;
+              }
+            } else {
+              if (height > LIMITE_MAX_ALTURA) {
+                width *= LIMITE_MAX_ALTURA / height;
+                height = LIMITE_MAX_ALTURA;
+              }
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+            ctx.drawImage(img, 0, 0, width, height);
+
+            resolve(canvas.toDataURL("image/jpeg", 0.65));
+          };
+          img.onerror = reject;
+        };
+        reader.onerror = reject;
+      });
+    }
+
+    // Filtra dinamicamente em tempo real os cartões exibidos na aba "Prontas"
+    function filtrarCartoesProntas() {
+      const termo = document.getElementById("inputPesquisa").value.toLowerCase().trim();
+      const filtroAfiliado = document.getElementById("filtroAfiliadoCards").value;
+      const cartoes = document.querySelectorAll(".card-item-exibicao-alvo");
+
+      cartoes.forEach(cartao => {
+        const id = cartao.getAttribute("data-id") || "";
+        const celular = cartao.getAttribute("data-celular") || "";
+        const pix = cartao.getAttribute("data-pix") || "";
+        const afiliado = cartao.getAttribute("data-afiliado") || "";
+
+        const batePesquisa = !termo || 
+                            id.includes(termo) || 
+                            celular.includes(termo) || 
+                            pix.includes(termo) ||
+                            afiliado.toLowerCase().includes(termo);
+
+        const bateAfiliado = !filtroAfiliado || afiliado === filtroAfiliado;
+
+        if (batePesquisa && bateAfiliado) {
+          cartao.style.display = "flex";
+        } else {
+          cartao.style.display = "none";
+        }
+      });
+    }
+
+    // Renderização dos cartões na seção "Prontas"
+    function renderizarCartoesProntas() {
+      const containerProntas = document.getElementById("listaCompleta");
+      if (!containerProntas) return;
+
+      if (dados.length === 0) {
+        containerProntas.innerHTML = `
+          <div class="sem-dados">
+            <span style="font-size: 3rem;">📂</span>
+            <p>Nenhum registo disponível.</p>
+            <button onclick="navegarAbas('cadastro')" class="btn-ir-cadastrar">Fazer Cadastro</button>
+          </div>`;
+        return;
+      }
+
+      containerProntas.innerHTML = "";
+
+      const copReversa = [...dados].map((val, idx) => ({ val, originalIdx: idx })).reverse();
+
+      copReversa.forEach(({ val, originalIdx }) => {
+        const apenasNumCelular = val.celular ? val.celular.replace(/\D/g, '') : '';
+        const apenasNumAfiliado = val.afiliado ? val.afiliado.replace(/\D/g, '') : '';
+
+        // Cria container individual com tags de busca integradas
+        const cardContainer = document.createElement("div");
+        cardContainer.className = "card card-exibicao card-item-exibicao-alvo";
+        cardContainer.setAttribute("data-id", val.id.toLowerCase());
+        cardContainer.setAttribute("data-celular", apenasNumCelular);
+        cardContainer.setAttribute("data-pix", (val.pix || "").toLowerCase());
+        cardContainer.setAttribute("data-afiliado", val.afiliado || "");
+
+        cardContainer.innerHTML = `
+          <!-- 1. Imagem posicionada no Topo -->
+          ${val.imagem ? `
+            <div class="card-media">
+              <img src="${val.imagem}" alt="Imagem do ID ${val.id}">
+            </div>
+          ` : `
+            <div class="card-media-placeholder">
+              <span>🖼️ Sem Imagem Disponível</span>
+            </div>
+          `}
+
+          <!-- 2. ID posicionado imediatamente após a Imagem -->
+          <div class="card-header-exibicao">
+            <span class="tag-id">🆔 ID: ${val.id}</span>
+          </div>
+
+          <!-- 3. Dados do Cartão -->
+          <div class="card-body">
+            <div class="info-group">
+              <div class="info-item">
+                <span class="info-label">📱 Celular</span>
+                <span class="info-value">${val.celular}</span>
+              </div>
+            </div>
+
+            ${val.pix ? `
+              <div class="info-group">
+                <div class="info-item">
+                  <span class="info-label">🔑 Chave Pix</span>
+                  <span class="info-value" style="font-family: monospace; letter-spacing: 0.02em;">${val.pix}</span>
+                </div>
+              </div>
+            ` : ''}
+
+            <div class="info-group">
+              <div class="info-item">
+                <span class="info-label">🔗 Link Associado</span>
+                <a href="${val.link}" target="_blank" class="info-link" rel="noopener noreferrer">${val.link}</a>
+              </div>
+            </div>
+
+            ${val.afiliado ? `
+              <div class="info-group">
+                <div class="info-item">
+                  <span class="info-label">👤 Afiliado (Agente)</span>
+                  <span class="info-value">${val.afiliado}</span>
+                </div>
+              </div>
+            ` : ''}
+
+            <!-- Ações Rápidas de Cópia Integrada (Sugestão 4 com retenção total do innerHTML ativo) -->
+            <div class="card-quick-actions">
+              <button class="btn-quick-action btn-copy-celular" onclick="copiarFluxo('${apenasNumCelular}', this, '📱 Celular')">
+                📱 Celular
+              </button>
+
+              <button class="btn-quick-action btn-copy-link" onclick="copiarFluxo('${val.link}', this, '🔗 Link')">
+                🔗 Link
+              </button>
+
+              <button class="btn-quick-action btn-copy-id" onclick="copiarFluxo('${val.id}', this, '🆔 ID')">
+                🆔 ID
+              </button>
+
+              ${val.pix ? `
+                <button class="btn-quick-action btn-copy-pix" onclick="copiarFluxo('${val.pix}', this, '💎 Pix')">
+                  💎 Pix
+                </button>
+              ` : `
+                <button class="btn-quick-action" disabled style="opacity: 0.4; cursor: not-allowed; background: #f1f5f9; color: #94a3b8; border-color: #e2e8f0;">
+                  ❌ Sem Pix
+                </button>
+              `}
+
+              ${val.afiliado ? `
+                <button class="btn-quick-action btn-copy-afiliado btn-span-2" onclick="copiarFluxo('${apenasNumAfiliado}', this, '👤 Copiar Afiliado')">
+                  👤 Copiar Afiliado
+                </button>
+              ` : `
+                <button class="btn-quick-action btn-span-2" disabled style="opacity: 0.4; cursor: not-allowed; background: #f1f5f9; color: #94a3b8; border-color: #e2e8f0;">
+                  ❌ Sem Afiliado
+                </button>
+              `}
+
+              <!-- Botão Dinâmico de Partilha Externa -->
+              <button class="btn-quick-action btn-share-card btn-span-2" onclick="partilharRegistoCompleto('${val.id}', '${val.celular}', '${val.pix}', '${val.link}', '${val.afiliado}')">
+                📤 Partilhar Detalhes
+              </button>
+            </div>
+          </div>
+        `;
+        containerProntas.appendChild(cardContainer);
+      });
+    }
+
+    // API de Backup e Exportação
+    function fluxoExportarArquivo() {
+      if (dados.length === 0) {
+        emitirNotificacao("Não existem registros cadastrados para exportar.");
+        return;
+      }
+
+      try {
+        const conteudo = JSON.stringify(dados, null, 2);
+        const blob = new Blob([conteudo], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        
+        const dataHoje = new Date().toISOString().slice(0, 10);
+        const nomeArquivo = `backup_cadastros_${dataHoje}.json`;
+
+        const aTemp = document.createElement("a");
+        aTemp.href = url;
+        aTemp.download = nomeArquivo;
+        document.body.appendChild(aTemp);
+        aTemp.click();
+        
+        setTimeout(() => {
+          document.body.removeChild(aTemp);
+          URL.revokeObjectURL(url);
+        }, 100);
+
+        emitirNotificacao("Backup exportado com sucesso!");
+      } catch (err) {
+        console.error("Erro na exportação de dados:", err);
+        emitirNotificacao("Erro ao gerar arquivo de exportação.");
+      }
+    }
+
+    // Função para IMPORTAR arquivo JSON carregado com validação preventiva de tamanho
+    function fluxoImportarArquivo() {
+      const input = document.getElementById("importArquivoInput");
+      
+      if (!input || !input.files || input.files.length === 0) {
+        emitirNotificacao("Por favor, selecione um arquivo de backup (.json) primeiro.");
+        return;
+      }
+
+      const arquivo = input.files[0];
+
+      // Proteção de memória contra arquivos abusivos
+      if (arquivo.size > 15 * 1024 * 1024) { // Limite máximo tolerado de 15MB
+        emitirNotificacao("Erro: Arquivo demasiado grande (Máximo: 15MB).");
+        return;
+      }
+
+      const leitor = new FileReader();
+
+      leitor.onload = function(e) {
+        try {
+          const dadosImportados = JSON.parse(e.target.result);
+          
+          if (Array.isArray(dadosImportados)) {
+            const estruturaValida = dadosImportados.every(item => item && item.id && item.celular && item.link);
+            
+            if (!estruturaValida && dadosImportados.length > 0) {
+              emitirNotificacao("Erro: Arquivo com propriedades incorretas.");
+              return;
+            }
+
+            dados = dadosImportados;
+            guardarLocalStore();
+            atualizarListagens();
+            emitirNotificacao(`Sucesso! ${dados.length} registros importados.`);
+            input.value = "";
+          } else {
+            emitirNotificacao("Formato do arquivo inválido (deve ser uma lista JSON).");
+          }
+        } catch (err) {
+          console.error("Falha no parse do arquivo importado:", err);
+          emitirNotificacao("Erro ao processar o arquivo. Certifique-se de que é um JSON válido.");
+        }
+      };
+
+      leitor.onerror = function() {
+        emitirNotificacao("Erro na leitura do arquivo físico de backup.");
+      };
+
+      leitor.readAsText(arquivo);
+    }
+
+    // API de Área de Transferência com suporte a iFrames e WebViews (Sugestão 4 nativa)
+    window.copiarFluxo = function(texto, botaoRef, originalLabel) {
+      if (!texto) return;
+
+      const htmlOriginal = botaoRef.innerHTML; // Preserva o elemento bruto completo incluindo os emojis estruturados
+      const backgroundOriginal = botaoRef.style.background;
+      const colorOriginal = botaoRef.style.color;
+
+      const realizarFeedbackSucesso = () => {
+        botaoRef.innerHTML = "✅ Copiado!";
+        botaoRef.style.background = "#e2e8f0";
+        botaoRef.style.color = "#0f172a";
+
+        emitirNotificacao(`Conteúdo copiado!`);
+
+        setTimeout(() => {
+          botaoRef.innerHTML = htmlOriginal; // Repõe o HTML completo perfeitamente sem perdas
+          botaoRef.style.background = backgroundOriginal;
+          botaoRef.style.color = colorOriginal;
+        }, 1500);
+      };
+
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(texto)
+          .then(() => {
+            realizarFeedbackSucesso();
+          })
+          .catch(() => {
+            metodoFallbackCopia(texto, realizarFeedbackSucesso);
+          });
+      } else {
+        metodoFallbackCopia(texto, realizarFeedbackSucesso);
+      }
+    };
+
+    function metodoFallbackCopia(texto, callbackSucesso) {
+      let executouComSucesso = false;
+      const inputTemp = document.createElement("input");
+      inputTemp.value = texto;
+      
+      inputTemp.style.position = "fixed";
+      inputTemp.style.top = "0";
+      inputTemp.style.left = "0";
+      inputTemp.style.opacity = "0";
+      inputTemp.style.pointerEvents = "none";
+      
+      document.body.appendChild(inputTemp);
+      inputTemp.focus();
+      inputTemp.select();
+      inputTemp.setSelectionRange(0, 99999);
+
+      try {
+        executouComSucesso = document.execCommand('copy');
+      } catch (err) {
+        console.error("Falha no método legado execCommand:", err);
+      }
+
+      document.body.removeChild(inputTemp);
+
+      if (executouComSucesso) {
+        callbackSucesso();
+      } else {
+        prompt("Copie manualmente o código abaixo selecionado:", texto);
+      }
+    }
+
+    // API Inteligente de Partilha Nativa e Consolidada (Web Share API com Fallback estruturado)
+    window.partilharRegistoCompleto = function(id, celular, pix, link, afiliado) {
+      let msg = `📋 *DETALHES DO REGISTO*\n\n`;
+      msg += `🆔 *ID:* ${id}\n`;
+      msg += `📱 *Celular:* ${celular}\n`;
+      if (pix) msg += `🔑 *Pix:* ${pix}\n`;
+      msg += `🔗 *Link:* ${link}\n`;
+      if (afiliado) msg += `👤 *Afiliado:* ${afiliado}\n`;
+      msg += `\n_Gerado por Gestor de Cadastros_`;
+
+      if (navigator.share) {
+        navigator.share({
+          title: `Registo ID: ${id}`,
+          text: msg
+        })
+        .then(() => emitirNotificacao("Informações partilhadas com sucesso!"))
+        .catch((err) => {
+          console.log("Partilha nativa cancelada ou abortada:", err);
+        });
+      } else {
+        // Fallback: Copia o bloco de texto consolidado para colar no WhatsApp/Mensagens
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard.writeText(msg).then(() => {
+            emitirNotificacao("Texto consolidado copiado! Cole onde quiser.");
+          });
+        } else {
+          metodoFallbackCopia(msg, () => {
+            emitirNotificacao("Texto de partilha copiado!");
+          });
+        }
+      }
+    };
+  </script>
+</body>
+</html>
