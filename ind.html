@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>2Gestor de Cadastros Otimizado</title>
+  <title>Gestor de Cadastros Otimizado</title>
   <!-- Manifesto inline configurado para carregar especificamente a página ind.html ao ser aberto -->
   <link rel="manifest" href='data:application/manifest+json,%7B%22name%22%3A%22Gestor%20de%20Cadastros%20Otimizado%22%2C%22short_name%22%3A%22GestorCadastros%22%2C%22start_url%22%3A%22ind.html%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23f8fafc%22%2C%22theme_color%22%3A%22%234f46e5%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22https%3A%2F%2Fplacehold.co%2F192x192%2F4f46e5%2Fffffff%3Ftext%3DGC%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fpng%22%7D%2C%7B%22src%22%3A%22https%3A%2F%2Fplacehold.co%2F512x512%2F4f46e5%2Fffffff%3Ftext%3DGC%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fpng%22%7D%5D%7D' />
   
@@ -1407,18 +1407,32 @@
         }
 
         guardarLocalStore();
+        
+        // Sugestão 5: Reset do Formulário com remoção explícita da referência do arquivo
         formCadastro.reset();
+        const inputImagem = document.getElementById("imagem");
+        if (inputImagem) {
+          inputImagem.value = "";
+        }
+        
         atualizarListagens();
       });
     }
 
-    // Persistência robusta local
+    // Sugestão 3: Persistência robusta local com reversão de estado em caso de estouro de memória
     function guardarLocalStore() {
       try {
         localStorage.setItem("cadastros", JSON.stringify(dados));
       } catch (e) {
         console.error("Estouro de armazenamento local detectado:", e);
-        emitirNotificacao("Erro: Imagem demasiado pesada para guardar.");
+        emitirNotificacao("Erro: Sem espaço! A imagem é muito pesada ou o limite foi atingido.");
+        // Reverte os dados internos em memória para a versão salva no disco
+        try {
+          dados = JSON.parse(localStorage.getItem("cadastros")) || [];
+          atualizarListagens();
+        } catch (err) {
+          console.error("Erro crítico ao tentar restaurar dados antigos:", err);
+        }
       }
     }
 
@@ -1524,9 +1538,14 @@
       document.getElementById("btnCancelarEdicao").style.display = "none";
     }
 
+    // Sugestão 5: Limpeza também no cancelamento da edição
     window.cancelarFluxoEdicao = function() {
       fecharEstadoEdicaoForm();
       formCadastro.reset();
+      const inputImagem = document.getElementById("imagem");
+      if (inputImagem) {
+        inputImagem.value = "";
+      }
       emitirNotificacao("Edição cancelada.");
     };
 
@@ -1765,13 +1784,16 @@
     }
 
     // API de Área de Transferência com suporte a iFrames e WebViews
+    // Sugestão 4: Utilização do cache interno do innerHTML para manter os emojis originais nos botões de cópia reativa
     window.copiarFluxo = function(texto, botaoRef, originalLabel) {
       if (!texto) return;
 
+      const htmlOriginal = botaoRef.innerHTML;
+      const backgroundOriginal = botaoRef.style.background;
+      const colorOriginal = botaoRef.style.color;
+
       const realizarFeedbackSucesso = () => {
         botaoRef.innerHTML = "✅ Copiado!";
-        const backgroundOriginal = botaoRef.style.background;
-        const colorOriginal = botaoRef.style.color;
 
         botaoRef.style.background = "#e2e8f0";
         botaoRef.style.color = "#0f172a";
@@ -1779,7 +1801,7 @@
         emitirNotificacao(`Conteúdo copiado!`);
 
         setTimeout(() => {
-          botaoRef.innerHTML = originalLabel.split(' ')[1] || originalLabel;
+          botaoRef.innerHTML = htmlOriginal;
           botaoRef.style.background = backgroundOriginal;
           botaoRef.style.color = colorOriginal;
         }, 1500);
