@@ -4,7 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Gestor de Cadastros Otimizado</title>
-  <!-- Manifesto inline para habilitar suporte a PWA (Instalação na tela inicial) -->
+  
+  <!-- Manifesto inline atualizado para habilitação perfeita do PWA -->
   <link rel="manifest" href='data:application/manifest+json,%7B%22name%22%3A%22Gestor%20de%20Cadastros%20Otimizado%22%2C%22short_name%22%3A%22GestorCadastros%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23f8fafc%22%2C%22theme_color%22%3A%22%234f46e5%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22https%3A%2F%2Fplacehold.co%2F192x192%2F4f46e5%2Fffffff%3Ftext%3DGC%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fpng%22%7D%2C%7B%22src%22%3A%22https%3A%2F%2Fplacehold.co%2F512x512%2F4f46e5%2Fffffff%3Ftext%3DGC%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fpng%22%7D%5D%7D' />
   
   <style>
@@ -644,6 +645,51 @@
     .btn-backup-install:hover {
       background-color: var(--warning-hover);
     }
+    .btn-backup-install:disabled {
+      background-color: #cbd5e1;
+      color: #64748b;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+
+    /* Estilos das Abas de Instalação PWA */
+    .install-tabs {
+      display: flex;
+      gap: 8px;
+      margin: 16px 0;
+      border-bottom: 2.5px solid #e2e8f0;
+      padding-bottom: 8px;
+    }
+
+    .install-tab-btn {
+      flex: 1;
+      padding: 10px 6px;
+      font-size: 0.8rem;
+      font-weight: 750;
+      border: none;
+      background: #f1f5f9;
+      color: var(--text-muted);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .install-tab-btn.active {
+      background: var(--primary-color);
+      color: #ffffff;
+    }
+
+    .install-instruction-content {
+      display: none;
+      text-align: left;
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+
+    .install-instruction-content.active {
+      display: block;
+    }
 
     .toast-notificacao {
       position: fixed;
@@ -691,7 +737,7 @@
       background: var(--card-bg);
       border-radius: var(--radius-lg);
       padding: 24px;
-      max-width: 400px;
+      max-width: 440px;
       width: 100%;
       box-shadow: var(--shadow-lg);
       text-align: center;
@@ -843,30 +889,55 @@
     </div>
   </div>
 
-  <!-- Modal de Instruções de Instalação Manual (Fallback Altamente Explicativo) -->
+  <!-- Modal de Instruções de Instalação Manual (Aprimorado e Dinâmico por Abas) -->
   <div id="modalInstalarInstrucoes" class="modal-overlay" aria-hidden="true">
     <div class="modal-box">
       <h4>📲 Instalação no Dispositivo</h4>
       <p style="text-align: left; font-size: 0.9rem; margin-bottom: 12px; line-height: 1.4;">
-        Para segurança do seu smartphone, os navegadores só permitem a instalação automática se você estiver acessando por um link seguro <strong>(HTTPS)</strong> ou rodando via servidor de desenvolvimento local.
+        Para segurança do seu aparelho, os navegadores só permitem a instalação nativa sob conexão segura <strong>(HTTPS)</strong> ou rodando localmente.
       </p>
+
+      <!-- Seleção de Sistema Operacional por Abas -->
+      <div class="install-tabs">
+        <button id="tabBtn-ios" class="install-tab-btn" onclick="mudarTabInstalacao('ios')">🍏 iPhone / iOS</button>
+        <button id="tabBtn-android" class="install-tab-btn" onclick="mudarTabInstalacao('android')">🤖 Android</button>
+        <button id="tabBtn-desktop" class="install-tab-btn" onclick="mudarTabInstalacao('desktop')">💻 Computador</button>
+      </div>
       
-      <div style="text-align: left; background: #f8fafc; border: 1px solid #e2e8f0; padding: 14px; border-radius: var(--radius-md); font-size: 0.85rem; margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px;">
-        <div>
-          <strong>🌐 Como rodar como Aplicativo Real:</strong>
-          <div style="color: var(--text-muted); margin-top: 3px;">Hospede o arquivo em servidores gratuitos com suporte HTTPS (como o GitHub Pages, Vercel ou Netlify) para habilitar o instalador automático de um clique.</div>
-        </div>
-        <hr style="margin: 8px 0; background: #e2e8f0;">
-        <div>
-          <strong>🍏 No iOS (Safari):</strong>
-          <div style="color: var(--text-muted); margin-top: 3px;">Abra este link no navegador Safari, clique no botão de <strong>Compartilhar</strong> (ícone de seta para cima) e selecione <strong>"Adicionar à Tela de Início"</strong>.</div>
-        </div>
-        <hr style="margin: 8px 0; background: #e2e8f0;">
-        <div>
-          <strong>🤖 No Android (Chrome / Firefox):</strong>
-          <div style="color: var(--text-muted); margin-top: 3px;">Clique no botão de <strong>três pontinhos</strong> no canto superior direito e selecione <strong>"Instalar aplicativo"</strong> ou <strong>"Adicionar à tela inicial"</strong>.</div>
+      <!-- Conteúdo iOS -->
+      <div id="instrucao-ios" class="install-instruction-content">
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 14px; border-radius: var(--radius-md); font-size: 0.85rem; margin-bottom: 20px;">
+          <ol style="margin-left: 16px; display: flex; flex-direction: column; gap: 8px;">
+            <li>Abra este site utilizando o navegador original <strong>Safari</strong>.</li>
+            <li>Toque no botão de <strong>Compartilhar</strong> <span style="font-size: 1.1rem;">📤</span> (ícone com uma seta para cima).</li>
+            <li>Role a lista para baixo e toque em <strong>"Adicionar à Tela de Início"</strong>.</li>
+            <li>Pronto! Ele será aberto em tela cheia como um aplicativo real.</li>
+          </ol>
         </div>
       </div>
+
+      <!-- Conteúdo Android -->
+      <div id="instrucao-android" class="install-instruction-content">
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 14px; border-radius: var(--radius-md); font-size: 0.85rem; margin-bottom: 20px;">
+          <ol style="margin-left: 16px; display: flex; flex-direction: column; gap: 8px;">
+            <li>No navegador Google Chrome, toque no botão dos <strong>três pontinhos</strong> <span style="font-size: 1.1rem;">⋮</span> no canto superior direito.</li>
+            <li>Selecione a opção <strong>"Instalar aplicativo"</strong> ou <strong>"Adicionar à tela inicial"</strong>.</li>
+            <li>Confirme tocando no botão "Instalar".</li>
+          </ol>
+        </div>
+      </div>
+
+      <!-- Conteúdo Desktop -->
+      <div id="instrucao-desktop" class="install-instruction-content">
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 14px; border-radius: var(--radius-md); font-size: 0.85rem; margin-bottom: 20px;">
+          <ol style="margin-left: 16px; display: flex; flex-direction: column; gap: 8px;">
+            <li>Na barra de endereços do Chrome ou Edge, clique no ícone de <strong>Monitor com uma Seta</strong> <span style="font-size: 1.1rem;">🖥️</span>.</li>
+            <li>Se preferir, clique no botão de <strong>três pontos</strong> e selecione <strong>"Instalar Gestor..."</strong>.</li>
+            <li>O aplicativo passará a ser executado em uma janela isolada com alto desempenho.</li>
+          </ol>
+        </div>
+      </div>
+
       <div class="modal-actions">
         <button class="btn-fechar" onclick="fecharModalInstalarInstrucoes()">Entendido</button>
       </div>
@@ -939,7 +1010,7 @@
             <span style="font-size: 1.5rem;">📲</span>
             <div class="backup-title">Instalar Aplicativo</div>
           </div>
-          <div class="backup-desc">Adicione este aplicativo diretamente à tela inicial do seu celular ou computador para acessá-lo offline de forma rápida e nativa.</div>
+          <div class="backup-desc">Adicione este aplicativo diretamente à tela inicial do seu celular ou computador para acessá-lo de forma rápida e nativa.</div>
           <button id="btnInstalarPWA" onclick="fluxoInstalarApp()" class="btn-backup-action btn-backup-install">
             Instalar na Tela Inicial
           </button>
@@ -1040,19 +1111,22 @@
       configurarTratamentoInputs();
       atualizarListagens();
       verificarSinalizadorPWA();
+      detectarDispositivoSistemico();
     });
 
-    // Monitoramento inteligente do evento de instalação do PWA
+    // Monitoramento do evento nativo de instalação do PWA
     window.addEventListener('beforeinstallprompt', (e) => {
-      // Impede que o Chrome mostre o banner nativo imediatamente
       e.preventDefault();
-      // Salva o evento para ser disparado posteriormente de forma manual
       deferredPrompt = e;
       
       const btnInstalar = document.getElementById("btnInstalarPWA");
       if (btnInstalar) {
-        btnInstalar.innerHTML = "⚡ Instalar Agora";
-        btnInstalar.style.backgroundColor = "var(--success-color)";
+        // Se já está instalado, não sobrescreve para "Instalar Agora"
+        if (!isAppInstalado()) {
+          btnInstalar.innerHTML = "⚡ Instalar Agora";
+          btnInstalar.style.backgroundColor = "var(--success-color)";
+          btnInstalar.disabled = false;
+        }
       }
     });
 
@@ -1060,19 +1134,63 @@
     window.addEventListener('appinstalled', (evt) => {
       emitirNotificacao("🎉 Aplicativo instalado com sucesso na sua tela inicial!");
       deferredPrompt = null;
+      verificarSinalizadorPWA();
     });
 
-    // Monitora o estado de ativação e exibe logs úteis de depuração
+    // Verifica se o aplicativo já está rodando de forma standalone (PWA instalado)
+    function isAppInstalado() {
+      return (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true);
+    }
+
+    // Monitora e atualiza a UI se o aplicativo já estiver instalado
     function verificarSinalizadorPWA() {
       const isSecure = window.location.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
       const isIFrame = window.self !== window.top;
       
-      console.log("[PWA Status]: Contexto Seguro:", isSecure, " | Dentro de Iframe:", isIFrame);
+      console.log("[PWA Status]: Contexto Seguro:", isSecure, " | Dentro de Iframe:", isIFrame, " | Já Instalado:", isAppInstalado());
+
+      const btnInstalar = document.getElementById("btnInstalarPWA");
+      if (btnInstalar && isAppInstalado()) {
+        btnInstalar.innerHTML = "✅ Aplicativo Instalado";
+        btnInstalar.style.backgroundColor = "#64748b";
+        btnInstalar.disabled = true;
+      }
+    }
+
+    // Detecta o sistema operacional do usuário para abrir a aba correta no modal
+    function detectarDispositivoSistemico() {
+      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+      
+      if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+        mudarTabInstalacao('ios');
+      } else if (/android/i.test(userAgent)) {
+        mudarTabInstalacao('android');
+      } else {
+        mudarTabInstalacao('desktop');
+      }
+    }
+
+    // Função para alternar as abas informativas de instalação manual
+    function mudarTabInstalacao(plataforma) {
+      // Desmarca todos os botões e esconde os conteúdos
+      document.querySelectorAll('.install-tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.install-instruction-content').forEach(content => content.classList.remove('active'));
+
+      // Ativa a plataforma selecionada
+      const btnAtivo = document.getElementById(`tabBtn-${plataforma}`);
+      const conteudoAtivo = document.getElementById(`instrucao-${plataforma}`);
+
+      if (btnAtivo) btnAtivo.classList.add('active');
+      if (conteudoAtivo) conteudoAtivo.classList.add('active');
     }
 
     // Executa o prompt de instalação ou mostra as instruções se indisponível
     function fluxoInstalarApp() {
-      // Se o evento foi capturado, o navegador suporta e está pronto para instalar
+      if (isAppInstalado()) {
+        emitirNotificacao("O aplicativo já está instalado no seu aparelho!");
+        return;
+      }
+
       if (deferredPrompt) {
         deferredPrompt.prompt();
         deferredPrompt.userChoice.then((resultado) => {
@@ -1084,7 +1202,7 @@
           deferredPrompt = null;
         });
       } else {
-        // Se não foi capturado (contexto não seguro, local_file ou iframe), abre o modal detalhado de instruções
+        // Fallback dinâmico: Abre o modal intuitivo por abas
         abrirModalInstalarInstrucoes();
       }
     }
@@ -1111,11 +1229,17 @@
       }, tempo);
     }
 
-    // Modal para Confirmação Segura de Eliminações individuais
+    // Modal para Confirmação Segura de Eliminações individuais (CORRIGIDO)
     function pedirConfirmacaoEliminar(idx) {
       exclusaoAlvoIdx = idx;
       const idRegistro = dados[idx] ? dados[idx].id : '';
-      document.getElementById("modalExcluirMessage").innerText = `Tem a certeza que deseja eliminar o registo ID: ${idRegistro} permanentemente?`;
+      
+      // FIX CRÍTICO: Correção de id de elemento de modalExcluirMessage para modalExcluirMensagem
+      const elemMsg = document.getElementById("modalExcluirMensagem");
+      if (elemMsg) {
+        elemMsg.innerText = `Tem a certeza que deseja eliminar o registo ID: ${idRegistro} permanentemente?`;
+      }
+      
       modalExcluir.classList.add("show");
       modalExcluir.setAttribute("aria-hidden", "false");
     }
@@ -1191,6 +1315,8 @@
         renderizarCartoesProntas();
       } else if (secaoDestino === 'cadastro') {
         renderizarIdsSimplificados();
+      } else if (secaoDestino === 'backup') {
+        verificarSinalizadorPWA();
       }
 
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1446,7 +1572,7 @@
       });
     }
 
-    // Renderização dos cartões otimizados na seção "Prontas"
+    // Renderização dos cartões na seção "Prontas"
     function renderizarCartoesProntas() {
       const containerProntas = document.getElementById("listaCompleta");
       if (!containerProntas) return;
