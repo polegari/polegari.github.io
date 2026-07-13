@@ -1540,4 +1540,169 @@
                     💎 Pix
                   </button>
                 ` : `
-                  <button class="btn-quick-action" disabled style="opacity: 0.4; cursor: not-allowed; background: #f1f5f9; color: #94a3b8;
+                  <button class="btn-quick-action" disabled style="opacity: 0.4; cursor: not-allowed; background: #f1f5f9; color: #94a3b8; border-color: #e2e8f0;">
+                    ❌ Sem Pix
+                  </button>
+                `}
+
+                ${val.afiliado ? `
+                  <button class="btn-quick-action btn-copy-afiliado btn-span-2" onclick="copiarFluxo('${val.afiliado}', this, '👤 Afiliado')">
+                    👤 Copiar Afiliado
+                  </button>
+                ` : `
+                  <button class="btn-quick-action btn-span-2" disabled style="opacity: 0.4; cursor: not-allowed; background: #f1f5f9; color: #94a3b8; border-color: #e2e8f0;">
+                    ❌ Sem Afiliado
+                  </button>
+                `}
+              </div>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    // API de Backup e Exportação
+    function fluxoExportarArquivo() {
+      if (dados.length === 0) {
+        emitirNotificacao("Não existem registros cadastrados para exportar.");
+        return;
+      }
+
+      try {
+        const conteudo = JSON.stringify(dados, null, 2);
+        const blob = new Blob([conteudo], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        
+        const dataHoje = new Date().toISOString().slice(0, 10);
+        const nomeArquivo = `backup_cadastros_${dataHoje}.json`;
+
+        const aTemp = document.createElement("a");
+        aTemp.href = url;
+        aTemp.download = nomeArquivo;
+        document.body.appendChild(aTemp);
+        aTemp.click();
+        
+        setTimeout(() => {
+          document.body.removeChild(aTemp);
+          URL.revokeObjectURL(url);
+        }, 100);
+
+        emitirNotificacao("Backup exportado com sucesso!");
+      } catch (err) {
+        console.error("Erro na exportação de dados:", err);
+        emitirNotificacao("Erro ao gerar arquivo de exportação.");
+      }
+    }
+
+    // Função para IMPORTAR arquivo JSON carregado
+    function fluxoImportarArquivo() {
+      const input = document.getElementById("importArquivoInput");
+      
+      if (!input || !input.files || input.files.length === 0) {
+        emitirNotificacao("Por favor, selecione um arquivo de backup (.json) primeiro.");
+        return;
+      }
+
+      const arquivo = input.files[0];
+      const leitor = new FileReader();
+
+      leitor.onload = function(e) {
+        try {
+          const dadosImportados = JSON.parse(e.target.result);
+          
+          if (Array.isArray(dadosImportados)) {
+            const estruturaValida = dadosImportados.every(item => item && item.id && item.celular && item.link);
+            
+            if (!estruturaValida && dadosImportados.length > 0) {
+              emitirNotificacao("Erro: Arquivo com propriedades incorretas.");
+              return;
+            }
+
+            dados = dadosImportados;
+            guardarLocalStore();
+            atualizarListagens();
+            emitirNotificacao(`Sucesso! ${dados.length} registros importados.`);
+            input.value = "";
+          } else {
+            emitirNotificacao("Formato do arquivo inválido (deve ser uma lista JSON).");
+          }
+        } catch (err) {
+          console.error("Falha no parse do arquivo importado:", err);
+          emitirNotificacao("Erro ao processar o arquivo. Certifique-se de que é um JSON válido.");
+        }
+      };
+
+      leitor.onerror = function() {
+        emitirNotificacao("Erro na leitura do arquivo físico de backup.");
+      };
+
+      leitor.readAsText(arquivo);
+    }
+
+    // API de Área de Transferência com suporte a iFrames e WebViews
+    window.copiarFluxo = function(texto, botaoRef, originalLabel) {
+      if (!texto) return;
+
+      const realizarFeedbackSucesso = () => {
+        botaoRef.innerHTML = "✅ Copiado!";
+        const backgroundOriginal = botaoRef.style.background;
+        const colorOriginal = botaoRef.style.color;
+
+        botaoRef.style.background = "#e2e8f0";
+        botaoRef.style.color = "#0f172a";
+
+        emitirNotificacao(`Conteúdo copiado!`);
+
+        setTimeout(() => {
+          botaoRef.innerHTML = originalLabel.split(' ')[1] || originalLabel;
+          botaoRef.style.background = backgroundOriginal;
+          botaoRef.style.color = colorOriginal;
+        }, 1500);
+      };
+
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(texto)
+          .then(() => {
+            realizarFeedbackSucesso();
+          })
+          .catch(() => {
+            metodoFallbackCopia(texto, realizarFeedbackSucesso);
+          });
+      } else {
+        metodoFallbackCopia(texto, realizarFeedbackSucesso);
+      }
+    };
+
+    function metodoFallbackCopia(texto, callbackSucesso) {
+      let executouComSucesso = false;
+      const inputTemp = document.createElement("input");
+      inputTemp.value = texto;
+      
+      inputTemp.style.position = "fixed";
+      inputTemp.style.top = "0";
+      inputTemp.style.left = "0";
+      inputTemp.style.opacity = "0";
+      inputTemp.style.pointerEvents = "none";
+      
+      document.body.appendChild(inputTemp);
+      inputTemp.focus();
+      inputTemp.select();
+      inputTemp.setSelectionRange(0, 99999);
+
+      try {
+        executouComSucesso = document.execCommand('copy');
+      } catch (err) {
+        console.error("Falha no método legado execCommand:", err);
+      }
+
+      document.body.removeChild(inputTemp);
+
+      if (executouComSucesso) {
+        callbackSucesso();
+      } else {
+        prompt("Copie manualmente o código abaixo selecionado:", texto);
+      }
+    }
+  </script>
+</body>
+</html>
