@@ -1049,33 +1049,45 @@
       color: white;
     }
 
+    /* OTIMIZAÇÃO RESPONSIVA E ADAPTÁVEL PARA O ESTÚDIO DE EDIÇÃO */
+    .editor-modal-box {
+      padding: 16px !important;
+      max-height: 95vh;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
     .editor-container {
       background: #0f172a;
       border-radius: var(--radius-md);
-      padding: 16px;
-      margin-bottom: 20px;
+      padding: 8px;
+      margin-bottom: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      min-height: 250px;
-      max-height: 350px;
+      height: 30vh; /* Altura proporcional ao viewport do celular */
+      min-height: 180px;
+      max-height: 280px;
       overflow: hidden;
       border: 1px solid #334155;
+      position: relative;
     }
 
     #canvasEditor {
       max-width: 100%;
-      max-height: 320px;
+      max-height: 100%;
       object-fit: contain;
       box-shadow: 0 4px 12px rgba(0,0,0,0.5);
       border-radius: var(--radius-sm);
+      touch-action: none; /* Bloqueia gestos nativos enquanto desenha no celular */
     }
 
     .editor-controls-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin-bottom: 20px;
+      gap: 6px;
+      margin-bottom: 12px;
     }
 
     .btn-editor-tool {
@@ -1103,6 +1115,23 @@
       background: var(--primary-color);
       border-color: var(--primary-focus);
       color: white;
+    }
+
+    /* Redimensionador de Grade para Celulares Muito Pequenos */
+    @media (max-width: 420px) {
+      .editor-controls-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .btn-editor-tool {
+        font-size: 0.72rem;
+        padding: 8px 2px;
+      }
+      .btn-editor-tool span {
+        font-size: 0.95rem;
+      }
+      .editor-modal-box h4 {
+        font-size: 1.15rem;
+      }
     }
   </style>
 </head>
@@ -1163,11 +1192,11 @@
     </div>
   </div>
 
-  <!-- Modal Estúdio de Edição de Imagem (Canvas Nativo) -->
+  <!-- Modal Estúdio de Edição de Imagem (Canvas Nativo Adaptável) -->
   <div id="modalEstudioEditor" class="modal-overlay" aria-hidden="true">
-    <div class="modal-box" style="max-width: 440px;">
+    <div class="modal-box editor-modal-box" style="max-width: 440px; width: 95%;">
       <h4>Estúdio de Edição</h4>
-      <p>Modifique as propriedades e orientação da sua imagem:</p>
+      <p style="color: var(--text-muted); font-size: 0.82rem; margin-bottom: 12px; text-align: center;">Modifique as propriedades e orientação da sua imagem:</p>
       
       <div class="editor-container">
         <canvas id="canvasEditor" 
@@ -1180,13 +1209,13 @@
                 ontouchend="pararDesenho(event)"></canvas>
       </div>
 
-      <div id="lapisControlsPanel" style="display: none; margin-bottom: 16px; background: #1e293b; border: 1px solid #334155; padding: 12px; border-radius: var(--radius-sm); align-items: center; justify-content: space-around; gap: 8px;">
+      <div id="lapisControlsPanel" style="display: none; margin-bottom: 12px; background: #1e293b; border: 1px solid #334155; padding: 10px; border-radius: var(--radius-sm); align-items: center; justify-content: space-around; gap: 8px;">
         <div style="display: flex; align-items: center; gap: 6px;">
           <span style="color: #cbd5e1; font-size: 0.8rem; font-weight: 600;">Cor:</span>
-          <input type="color" id="lapisCorPicker" value="#ef4444" onchange="atualizarConfigLapis()" style="width: 32px; height: 32px; border: none; border-radius: 50%; cursor: pointer; background: transparent;">
+          <input type="color" id="lapisCorPicker" value="#ef4444" onchange="atualizarConfigLapis()" style="width: 28px; height: 28px; border: none; border-radius: 50%; cursor: pointer; background: transparent;">
         </div>
         <div style="display: flex; align-items: center; gap: 6px; flex: 1; max-width: 180px;">
-          <span style="color: #cbd5e1; font-size: 0.8rem; font-weight: 600;">Espessura:</span>
+          <span style="color: #cbd5e1; font-size: 0.8rem; font-weight: 600;">Traço:</span>
           <input type="range" id="lapisEspessuraSlider" min="2" max="20" value="4" oninput="atualizarConfigLapis()" style="flex: 1; height: 6px; background: #475569; border-radius: 3px; outline: none; cursor: pointer;">
           <span id="lapisEspessuraVal" style="color: #cbd5e1; font-size: 0.8rem; min-width: 20px;">4px</span>
         </div>
@@ -1203,7 +1232,7 @@
           <span>🔄</span> Rotar Dir.
         </button>
         <button id="btnToolGrayscale" type="button" class="btn-editor-tool" onclick="editorAlternarPretoBranco()">
-          <span>🎨</span> Preto e Branco
+          <span>🎨</span> P. & B.
         </button>
         <button type="button" class="btn-editor-tool" onclick="editorInverterHorizontal()">
           <span>↔️</span> Espelho H.
@@ -1216,9 +1245,9 @@
         </button>
       </div>
 
-      <div class="modal-actions">
-        <button class="btn-fechar" onclick="fecharEstudioEditor()">Descartar</button>
-        <button class="btn-backup-import" style="border-radius: var(--radius-md); padding: 12px 20px; font-size: 0.9rem; font-weight: 750; border: none; cursor: pointer; color: white;" onclick="salvarEdicaoImagemEstudio()">
+      <div class="modal-actions" style="margin-top: 4px;">
+        <button class="btn-fechar" style="padding: 10px 14px; font-size: 0.85rem;" onclick="fecharEstudioEditor()">Descartar</button>
+        <button class="btn-backup-import" style="border-radius: var(--radius-md); padding: 10px 18px; font-size: 0.85rem; font-weight: 750; border: none; cursor: pointer; color: white;" onclick="salvarEdicaoImagemEstudio()">
           Aplicar Ajustes
         </button>
       </div>
@@ -1964,7 +1993,7 @@
       
       const novaImagemBase64 = canvasEditor.toDataURL("image/jpeg", 0.75);
       imagemBase64FormTemp = novaImagemBase64;
-      exibirPreviewForm(novaImagemBase64);
+      exibirPreviewForm(imagemBase64FormTemp);
       
       fecharEstudioEditor();
       emitirNotificacao("Ajustes aplicados na imagem do cadastro!");
