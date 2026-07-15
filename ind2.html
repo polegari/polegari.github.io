@@ -2163,15 +2163,20 @@ document.addEventListener("DOMContentLoaded", mudarMensagemSorte);
           dados.push(novoRegisto);
           emitirNotificacao("Registro gravado!");
         } else {
-          const conflito = dados.some((d, idx) => d.id === id && idx !== editandoIdx);
-          if (conflito) {
-            emitirNotificacao("Erro: Este ID já está sendo utilizado.");
-            return;
-          }
-          dados[editandoIdx] = novoRegisto;
-          emitirNotificacao("Registro atualizado!");
-          fecharEstadoEdicaoForm();
-        }
+  const conflito = dados.some((d, idx) => d.id === id && idx !== editandoIdx);
+  if (conflito) {
+    emitirNotificacao("Erro: Este ID já está sendo utilizado.");
+    return;
+  }
+  
+  // Remove o item da posição atual
+  const registoEditado = dados.splice(editandoIdx, 1)[0];
+  // Adiciona ao final do array (assim será exibido primeiro com .reverse())
+  dados.push(registoEditado);
+  
+  emitirNotificacao("Registro atualizado!");
+  fecharEstadoEdicaoForm();
+}
 
         guardarLocalStore();
         
