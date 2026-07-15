@@ -1317,6 +1317,12 @@
     <section id="sec-home" class="view-section active">
       <h1>🍀 Boa Sorte!</h1>
       <p>Que o seu dia seja repleto de grandes conquistas.</p>
+
+<!-- Onde fica a sua mensagem atual na Home -->
+<div class="mensagem-container">
+    <p id="mensagem-sorte">Carregando sua sorte do dia...</p>
+</div>
+
     </section>
 
     <!-- ==========================================
@@ -1491,6 +1497,36 @@
        LÓGICA JAVASCRIPT OTIMIZADA
        ========================================== -->
   <script>
+
+
+// 1. Lista de mensagens de sorte (você pode adicionar quantas quiser)
+const mensagensDeSorte = [
+    "Que a sorte acompanhe cada uma de suas decisões hoje!",
+    "Grandes conquistas começam com pequenos passos. Boa sorte!",
+    "O sucesso é a soma de pequenos esforços repetidos dia após dia.",
+    "Que o dia de hoje traga novas oportunidades e muita prosperidade!",
+    "Acredite no seu potencial e o universo conspirará a seu favor.",
+    "Foco, determinação e um pouquinho de sorte para o seu dia!",
+    "Que hoje tudo flua de forma leve, produtiva e muito lucrativa!"
+];
+
+// 2. Função para escolher uma mensagem aleatória
+function mudarMensagemSorte() {
+    // Gera um índice aleatório baseado no tamanho do array de mensagens
+    const indiceAleatorio = Math.floor(Math.random() * mensagensDeSorte.length);
+    
+    // Seleciona o elemento HTML pelo ID e altera o seu texto
+    const elementoMensagem = document.getElementById("mensagem-sorte");
+    if (elementoMensagem) {
+        elementoMensagem.textContent = mensagensDeSorte[indiceAleatorio];
+    }
+}
+
+// 3. Executa a função assim que a página terminar de carregar
+document.addEventListener("DOMContentLoaded", mudarMensagemSorte);
+
+
+
     // Recuperação de dados com tratamento contra falhas
     let dados = [];
     try {
