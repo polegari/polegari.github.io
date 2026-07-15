@@ -1170,10 +1170,32 @@
       <p>Modifique as propriedades e orientação da sua imagem:</p>
       
       <div class="editor-container">
-        <canvas id="canvasEditor"></canvas>
+        <canvas id="canvasEditor" 
+                onmousedown="iniciarDesenho(event)" 
+                onmousemove="desenharLinha(event)" 
+                onmouseup="pararDesenho(event)" 
+                onmouseleave="pararDesenho(event)"
+                ontouchstart="iniciarDesenho(event)"
+                ontouchmove="desenharLinha(event)"
+                ontouchend="pararDesenho(event)"></canvas>
+      </div>
+
+      <div id="lapisControlsPanel" style="display: none; margin-bottom: 16px; background: #1e293b; border: 1px solid #334155; padding: 12px; border-radius: var(--radius-sm); align-items: center; justify-content: space-around; gap: 8px;">
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <span style="color: #cbd5e1; font-size: 0.8rem; font-weight: 600;">Cor:</span>
+          <input type="color" id="lapisCorPicker" value="#ef4444" onchange="atualizarConfigLapis()" style="width: 32px; height: 32px; border: none; border-radius: 50%; cursor: pointer; background: transparent;">
+        </div>
+        <div style="display: flex; align-items: center; gap: 6px; flex: 1; max-width: 180px;">
+          <span style="color: #cbd5e1; font-size: 0.8rem; font-weight: 600;">Espessura:</span>
+          <input type="range" id="lapisEspessuraSlider" min="2" max="20" value="4" oninput="atualizarConfigLapis()" style="flex: 1; height: 6px; background: #475569; border-radius: 3px; outline: none; cursor: pointer;">
+          <span id="lapisEspessuraVal" style="color: #cbd5e1; font-size: 0.8rem; min-width: 20px;">4px</span>
+        </div>
       </div>
 
       <div class="editor-controls-grid">
+        <button id="btnToolLapis" type="button" class="btn-editor-tool" onclick="editorAlternarLapis()">
+          <span>✏️</span> Lápis
+        </button>
         <button type="button" class="btn-editor-tool" onclick="editorRotacionar(-90)">
           <span>🔄</span> Rotar Esq.
         </button>
@@ -1189,8 +1211,8 @@
         <button type="button" class="btn-editor-tool" onclick="editorInverterVertical()">
           <span>↕️</span> Espelho V.
         </button>
-        <button type="button" class="btn-editor-tool" onclick="editorResetarAjustes()">
-          <span>🧹</span> Resetar
+        <button type="button" class="btn-editor-tool" style="grid-column: span 3;" onclick="editorResetarAjustes()">
+          <span>🧹</span> Resetar tudo
         </button>
       </div>
 
@@ -1708,6 +1730,12 @@
         editorInvertidoV = false;
         editorPretoBranco = false;
 
+        editorModoLapis = false;
+        const btnLapis = document.getElementById("btnToolLapis");
+        const panelLapis = document.getElementById("lapisControlsPanel");
+        if (btnLapis) btnLapis.classList.remove("active");
+        if (panelLapis) panelLapis.style.display = "none";
+
         document.getElementById("btnToolGrayscale").classList.remove("active");
         
         modalEstudio.classList.add("show");
@@ -1799,13 +1827,135 @@
       desenharCanvasEditor();
     };
 
+    let editorDesenhando = false;
+    let editorModoLapis = false;
+    let ultimoX = 0;
+    let ultimoY = 0;
+    let lapisCor = "#ef4444";
+    let lapisLargura = 4;
+
+    window.editorAlternarLapis = function() {
+      editorModoLapis = !editorModoLapis;
+      const btn = document.getElementById("btnToolLapis");
+      const panel = document.getElementById("lapisControlsPanel");
+      
+      if (editorModoLapis) {
+        btn.classList.add("active");
+        panel.style.display = "flex";
+        // Congela as transformações atuais como uma nova imagem de fundo para que o usuário desenhe livremente
+        bakarTransformacoes();
+      } else {
+        btn.classList.remove("active");
+        panel.style.display = "none";
+      }
+    };
+
+    window.atualizarConfigLapis = function() {
+      const picker = document.getElementById("lapisCorPicker");
+      const slider = document.getElementById("lapisEspessuraSlider");
+      const valText = document.getElementById("lapisEspessuraVal");
+      
+      if (picker && slider && valText) {
+        lapisCor = picker.value;
+        lapisLargura = parseInt(slider.value);
+        valText.innerText = `${lapisLargura}px`;
+      }
+    };
+
+    function bakarTransformacoes() {
+      if (!canvasEditor) return;
+      const tempBase64 = canvasEditor.toDataURL("image/jpeg", 0.9);
+      editorImgObj = new Image();
+      editorImgObj.src = tempBase64;
+      editorImgObj.onload = function() {
+        // Redefine as rotações/espelhamentos temporários após estarem "assados" no arquivo base
+        editorRotacao = 0;
+        editorInvertidoH = false;
+        editorInvertidoV = false;
+        editorPretoBranco = false;
+        document.getElementById("btnToolGrayscale").classList.remove("active");
+        desenharCanvasEditor();
+      };
+    }
+
+    function obterCoordenadasEvento(e) {
+      const rect = canvasEditor.getBoundingClientRect();
+      const scaleX = canvasEditor.width / rect.width;
+      const scaleY = canvasEditor.height / rect.height;
+      
+      let clientX, clientY;
+      if (e.touches && e.touches.length > 0) {
+        clientX = e.touches[0].clientX;
+        clientY = e.touches[0].clientY;
+      } else {
+        clientX = e.clientX;
+        clientY = e.clientY;
+      }
+      
+      return {
+        x: (clientX - rect.left) * scaleX,
+        y: (clientY - rect.top) * scaleY
+      };
+    }
+
+    window.iniciarDesenho = function(e) {
+      if (!editorModoLapis) return;
+      e.preventDefault();
+      editorDesenhando = true;
+      const coords = obterCoordenadasEvento(e);
+      ultimoX = coords.x;
+      ultimoY = coords.y;
+    };
+
+    window.desenharLinha = function(e) {
+      if (!editorDesenhando || !editorModoLapis) return;
+      e.preventDefault();
+      const coords = obterCoordenadasEvento(e);
+      const ctx = canvasEditor.getContext("2d");
+      
+      ctx.beginPath();
+      ctx.moveTo(ultimoX, ultimoY);
+      ctx.lineTo(coords.x, coords.y);
+      ctx.strokeStyle = lapisCor;
+      ctx.lineWidth = lapisLargura;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.stroke();
+      
+      ultimoX = coords.x;
+      ultimoY = coords.y;
+    };
+
+    window.pararDesenho = function(e) {
+      if (editorDesenhando) {
+        editorDesenhando = false;
+        const tempImg = new Image();
+        tempImg.src = canvasEditor.toDataURL("image/jpeg", 0.9);
+        tempImg.onload = function() {
+          editorImgObj = tempImg;
+        };
+      }
+    };
+
     window.editorResetarAjustes = function() {
       editorRotacao = 0;
       editorInvertidoH = false;
       editorInvertidoV = false;
       editorPretoBranco = false;
       document.getElementById("btnToolGrayscale").classList.remove("active");
-      desenharCanvasEditor();
+      
+      // Redefine o lápis e seu painel ao limpar tudo
+      editorModoLapis = false;
+      const btn = document.getElementById("btnToolLapis");
+      const panel = document.getElementById("lapisControlsPanel");
+      if (btn) btn.classList.remove("active");
+      if (panel) panel.style.display = "none";
+
+      editorImgObj = new Image();
+      editorImgObj.src = imagemBase64FormTemp;
+      editorImgObj.onload = function() {
+        desenharCanvasEditor();
+      };
     };
 
     // Converte a edição de imagem do estúdio em base64 e atualiza o preview do formulário
