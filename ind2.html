@@ -190,24 +190,52 @@
       background: #eef2f6;
     }
 
-    /* Elemento de Pré-visualização de Imagem no Formulário */
+    /* Elemento de Pré-visualização de Imagem Interativa no Formulário */
     .form-image-preview-wrapper {
       display: none;
       position: relative;
       align-self: center;
-      width: 120px;
-      height: 120px;
+      width: 140px;
+      height: 140px;
       border-radius: var(--radius-md);
       overflow: hidden;
-      border: 2.5px solid #cbd5e1;
+      border: 2.5px dashed var(--primary-color);
       box-shadow: var(--shadow-md);
       margin: 8px 0;
+      cursor: pointer;
+      transition: var(--transition);
     }
 
     .form-image-preview-wrapper img {
       width: 100%;
       height: 100%;
       object-fit: cover;
+    }
+
+    /* Overlay para indicar que a imagem de preview é gerenciável e clicável */
+    .form-image-preview-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      opacity: 0;
+      transition: var(--transition);
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-align: center;
+      padding: 8px;
+    }
+
+    .form-image-preview-wrapper:hover {
+      transform: scale(1.03);
+    }
+
+    .form-image-preview-wrapper:hover .form-image-preview-overlay {
+      opacity: 1;
     }
 
     .form-image-preview-wrapper .btn-remove-preview {
@@ -228,6 +256,7 @@
       justify-content: center;
       box-shadow: var(--shadow-sm);
       transition: var(--transition);
+      z-index: 10;
     }
 
     .form-image-preview-wrapper .btn-remove-preview:hover {
@@ -973,6 +1002,108 @@
       font-size: 1.25rem;
       margin-bottom: 2px;
     }
+
+    /* Estilos Adicionais para as Opções de Imagem do Formulário e Estúdio de Edição */
+    .img-action-btn {
+      width: 100%;
+      padding: 14px;
+      font-size: 1rem;
+      font-weight: 700;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: var(--transition);
+      border: 1.5px solid transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    
+    .btn-form-edit-img {
+      background-color: rgba(79, 70, 229, 0.1);
+      color: var(--primary-color);
+      border-color: rgba(79, 70, 229, 0.2);
+    }
+    .btn-form-edit-img:hover {
+      background-color: var(--primary-color);
+      color: white;
+    }
+    
+    .btn-form-change-img {
+      background-color: rgba(16, 185, 129, 0.1);
+      color: var(--success-color);
+      border-color: rgba(16, 185, 129, 0.2);
+    }
+    .btn-form-change-img:hover {
+      background-color: var(--success-color);
+      color: white;
+    }
+
+    .btn-form-delete-img {
+      background-color: rgba(239, 68, 68, 0.1);
+      color: var(--danger-color);
+      border-color: rgba(239, 68, 68, 0.2);
+    }
+    .btn-form-delete-img:hover {
+      background-color: var(--danger-color);
+      color: white;
+    }
+
+    .editor-container {
+      background: #0f172a;
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 250px;
+      max-height: 350px;
+      overflow: hidden;
+      border: 1px solid #334155;
+    }
+
+    #canvasEditor {
+      max-width: 100%;
+      max-height: 320px;
+      object-fit: contain;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      border-radius: var(--radius-sm);
+    }
+
+    .editor-controls-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .btn-editor-tool {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #f1f5f9;
+      padding: 10px 4px;
+      border-radius: var(--radius-sm);
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      transition: var(--transition);
+    }
+
+    .btn-editor-tool:hover {
+      background: #334155;
+      border-color: #475569;
+    }
+
+    .btn-editor-tool.active {
+      background: var(--primary-color);
+      border-color: var(--primary-focus);
+      color: white;
+    }
   </style>
 </head>
 <body>
@@ -1004,11 +1135,71 @@
     </div>
   </div>
 
-  <!-- Modal Customizado para Zoom de Imagens (Nova Funcionalidade) -->
+  <!-- Modal Customizado para Zoom de Imagens das "Prontas" -->
   <div id="modalImagemZoom" class="modal-overlay" aria-hidden="true" onclick="fecharModalImagem()">
     <div class="modal-box" style="max-width: 480px; padding: 12px; position: relative; display: flex; flex-direction: column;" onclick="event.stopPropagation()">
       <button type="button" style="position: absolute; top: -12px; right: -12px; background-color: var(--danger-color); color: #ffffff; border: none; border-radius: 50%; width: 32px; height: 32px; font-size: 0.9rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-md); transition: var(--transition); z-index: 10002;" onclick="fecharModalImagem()" title="Fechar">✕</button>
       <img id="modalImagemZoomElement" src="" alt="Imagem ampliada" style="width: 100%; max-height: 70vh; object-fit: contain; border-radius: var(--radius-md);">
+    </div>
+  </div>
+
+  <!-- Modal de Opções Rápidas de Imagem (Formulário) -->
+  <div id="modalOpcoesImagemForm" class="modal-overlay" aria-hidden="true" onclick="fecharModalOpcoesImagem()">
+    <div class="modal-box" style="max-width: 360px;" onclick="event.stopPropagation()">
+      <h4>🖼️ Gerenciar Imagem</h4>
+      <p>Escolha o que você deseja fazer com a imagem anexada a este cadastro:</p>
+      <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
+        <button type="button" class="img-action-btn btn-form-edit-img" onclick="abrirEstudioEditor()">
+          ✏️ EDITAR IMAGEM
+        </button>
+        <button type="button" class="img-action-btn btn-form-change-img" onclick="dispararInputUploadOculto()">
+          📷 ALTERAR IMAGEM
+        </button>
+        <button type="button" class="img-action-btn btn-form-delete-img" onclick="confirmarExclusaoImagemForm()">
+          🗑️ EXCLUIR IMAGEM
+        </button>
+      </div>
+      <button class="btn-fechar" style="width: 100%; padding: 12px;" onclick="fecharModalOpcoesImagem()">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- Modal Estúdio de Edição de Imagem (Canvas Nativo) -->
+  <div id="modalEstudioEditor" class="modal-overlay" aria-hidden="true">
+    <div class="modal-box" style="max-width: 440px;">
+      <h4>Estúdio de Edição</h4>
+      <p>Modifique as propriedades e orientação da sua imagem:</p>
+      
+      <div class="editor-container">
+        <canvas id="canvasEditor"></canvas>
+      </div>
+
+      <div class="editor-controls-grid">
+        <button type="button" class="btn-editor-tool" onclick="editorRotacionar(-90)">
+          <span>🔄</span> Rotar Esq.
+        </button>
+        <button type="button" class="btn-editor-tool" onclick="editorRotacionar(90)">
+          <span>🔄</span> Rotar Dir.
+        </button>
+        <button id="btnToolGrayscale" type="button" class="btn-editor-tool" onclick="editorAlternarPretoBranco()">
+          <span>🎨</span> Preto e Branco
+        </button>
+        <button type="button" class="btn-editor-tool" onclick="editorInverterHorizontal()">
+          <span>↔️</span> Espelho H.
+        </button>
+        <button type="button" class="btn-editor-tool" onclick="editorInverterVertical()">
+          <span>↕️</span> Espelho V.
+        </button>
+        <button type="button" class="btn-editor-tool" onclick="editorResetarAjustes()">
+          <span>🧹</span> Resetar
+        </button>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-fechar" onclick="fecharEstudioEditor()">Descartar</button>
+        <button class="btn-backup-import" style="border-radius: var(--radius-md); padding: 12px 20px; font-size: 0.9rem; font-weight: 750; border: none; cursor: pointer; color: white;" onclick="salvarEdicaoImagemEstudio()">
+          Aplicar Ajustes
+        </button>
+      </div>
     </div>
   </div>
 
@@ -1116,10 +1307,14 @@
           <option value="">Selecione um Afiliado (Celular)</option>
         </select>
         
-        <!-- Visualização Dinâmica do Preview no Formulário -->
-        <div id="previewWrapper" class="form-image-preview-wrapper">
+        <!-- Visualização Dinâmica do Preview no Formulário com Clique Gerenciável -->
+        <div id="previewWrapper" class="form-image-preview-wrapper" onclick="abrirModalOpcoesImagem()">
           <img id="imagePreviewElement" src="" alt="Pré-visualização do arquivo">
-          <button type="button" class="btn-remove-preview" onclick="removerImagemPreview()" title="Remover imagem">✕</button>
+          <div class="form-image-preview-overlay">
+            <span>⚙️</span>
+            <span>Clique para gerenciar</span>
+          </div>
+          <button type="button" class="btn-remove-preview" onclick="event.stopPropagation(); removerImagemPreview()" title="Remover imagem">✕</button>
         </div>
 
         <div class="file-input-wrapper">
@@ -1256,8 +1451,15 @@
 
     let editandoIdx = -1;
     let exclusaoAlvoIdx = null;
-    let deferredPrompt = null; // Variável para capturar o evento de instalação do PWA
-    let imagemBase64FormTemp = ""; // Armazena a imagem ativa do formulário antes de salvar
+    let deferredPrompt = null; // Variável para PWA
+    let imagemBase64FormTemp = ""; // Imagem ativa do formulário
+
+    // Variáveis de estado exclusivas do Editor de Imagem (Canvas)
+    let editorImgObj = null; 
+    let editorRotacao = 0; // 0, 90, 180, 270...
+    let editorInvertidoH = false;
+    let editorInvertidoV = false;
+    let editorPretoBranco = false;
 
     // Componentes de Interface
     const toast = document.getElementById("toastGlobal");
@@ -1269,6 +1471,10 @@
     const inputCelular = document.getElementById("celular");
     const inputId = document.getElementById("id");
 
+    const modalOpcoesImagem = document.getElementById("modalOpcoesImagemForm");
+    const modalEstudio = document.getElementById("modalEstudioEditor");
+    const canvasEditor = document.getElementById("canvasEditor");
+
     // Ciclo de Vida Inicial
     window.addEventListener('DOMContentLoaded', () => {
       configurarTratamentoInputs();
@@ -1278,7 +1484,7 @@
       calcularConsumoEspaco();
     });
 
-    // Monitoramento do evento nativo de instalação do PWA
+    // Monitoramento do evento de instalação do PWA
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredPrompt = e;
@@ -1293,19 +1499,16 @@
       }
     });
 
-    // Escuta para saber se o app foi instalado com sucesso
     window.addEventListener('appinstalled', (evt) => {
       emitirNotificacao("🎉 Aplicativo instalado com sucesso na sua tela inicial!");
       deferredPrompt = null;
       verificarSinalizadorPWA();
     });
 
-    // Verifica se o aplicativo já está rodando de forma standalone (PWA instalado)
     function isAppInstalado() {
       return (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true);
     }
 
-    // Monitora e atualiza a UI se o aplicativo já estiver instalado (Otimizado para ocultar o card)
     function verificarSinalizadorPWA() {
       const isSecure = window.location.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
       const isIFrame = window.self !== window.top;
@@ -1316,14 +1519,12 @@
       const cardInstalacao = btnInstalar ? btnInstalar.closest('.backup-card') : null;
 
       if (isAppInstalado() && cardInstalacao) {
-        cardInstalacao.style.display = "none"; // Remove visualmente o painel redundante
+        cardInstalacao.style.display = "none"; // Oculta visualmente
       }
     }
 
-    // Detecta o sistema operacional do usuário para abrir a aba correta no modal
     function detectarDispositivoSistemico() {
       const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-      
       if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
         mudarTabInstalacao('ios');
       } else if (/android/i.test(userAgent)) {
@@ -1333,7 +1534,6 @@
       }
     }
 
-    // Função para alternar as abas informativas de instalação manual
     function mudarTabInstalacao(plataforma) {
       document.querySelectorAll('.install-tab-btn').forEach(btn => btn.classList.remove('active'));
       document.querySelectorAll('.install-instruction-content').forEach(content => content.classList.remove('active'));
@@ -1345,7 +1545,6 @@
       if (conteudoAtivo) conteudoAtivo.classList.add('active');
     }
 
-    // Executa o prompt de instalação ou mostra as instruções se indisponível
     function fluxoInstalarApp() {
       if (isAppInstalado()) {
         emitirNotificacao("O aplicativo já está instalado no seu aparelho!");
@@ -1377,7 +1576,6 @@
       modalInstalar.setAttribute("aria-hidden", "true");
     }
 
-    // Sistema de Notificações Toast Não-Bloqueante
     function emitirNotificacao(texto, tempo = 2500) {
       toast.innerText = texto;
       toast.classList.add("show");
@@ -1389,7 +1587,6 @@
       }, tempo);
     }
 
-    // Modal para Confirmação Segura de Exclusões individuais (Corrigido para Português do Brasil)
     function pedirConfirmacaoExcluir(idx) {
       exclusaoAlvoIdx = idx;
       const idRegistro = dados[idx] ? dados[idx].id : '';
@@ -1424,7 +1621,6 @@
       }
     };
 
-    // Modais para Confirmação de exclusão total do banco (Limpar)
     function pedirConfirmacaoLimpar() {
       if (dados.length === 0) {
         emitirNotificacao("Não existem dados cadastrados para limpar.");
@@ -1449,7 +1645,6 @@
       navegarAbas('home');
     }
 
-    // Funções de Controle do Modal de Zoom das Imagens
     window.abrirModalImagem = function(idx) {
       if (dados[idx] && dados[idx].imagem) {
         const modal = document.getElementById("modalImagemZoom");
@@ -1470,9 +1665,159 @@
         modal.setAttribute("aria-hidden", "true");
       }
       if (imgZoom) {
-        // Limpa o src após a transição de saída para otimizar memória
         setTimeout(() => { imgZoom.src = ""; }, 200);
       }
+    };
+
+    // Controle do Modal de Opções Rápidas de Imagem do Formulário
+    window.abrirModalOpcoesImagem = function() {
+      if (!imagemBase64FormTemp) return;
+      modalOpcoesImagem.classList.add("show");
+      modalOpcoesImagem.setAttribute("aria-hidden", "false");
+    };
+
+    window.fecharModalOpcoesImagem = function() {
+      modalOpcoesImagem.classList.remove("show");
+      modalOpcoesImagem.setAttribute("aria-hidden", "true");
+    };
+
+    // Disparar o input de upload oculto para a opção "Alterar"
+    window.dispararInputUploadOculto = function() {
+      fecharModalOpcoesImagem();
+      document.getElementById("imagem").click();
+    };
+
+    // Confirmar exclusão direta do formulário
+    window.confirmarExclusaoImagemForm = function() {
+      fecharModalOpcoesImagem();
+      removerImagemPreview();
+      emitirNotificacao("Imagem excluída do cadastro temporariamente.");
+    };
+
+    // Abrir o estúdio de edição baseado em canvas nativo
+    window.abrirEstudioEditor = function() {
+      fecharModalOpcoesImagem();
+      if (!imagemBase64FormTemp) return;
+
+      editorImgObj = new Image();
+      editorImgObj.src = imagemBase64FormTemp;
+      editorImgObj.onload = function() {
+        // Resetar o estado interno de manipulação antes de carregar
+        editorRotacao = 0;
+        editorInvertidoH = false;
+        editorInvertidoV = false;
+        editorPretoBranco = false;
+
+        document.getElementById("btnToolGrayscale").classList.remove("active");
+        
+        modalEstudio.classList.add("show");
+        modalEstudio.setAttribute("aria-hidden", "false");
+        desenharCanvasEditor();
+      };
+    };
+
+    window.fecharEstudioEditor = function() {
+      modalEstudio.classList.remove("show");
+      modalEstudio.setAttribute("aria-hidden", "true");
+    };
+
+    // Desenha a imagem no Canvas aplicando as transformações (rotação, espelhamento, escala de cinzas)
+    function desenharCanvasEditor() {
+      if (!editorImgObj || !canvasEditor) return;
+      
+      const ctx = canvasEditor.getContext("2d");
+      
+      // Determina as novas dimensões baseadas na rotação (muda se for 90 ou 270 graus)
+      const anguloRadiano = (editorRotacao * Math.PI) / 180;
+      const isHorizontal = Math.abs(editorRotacao % 180) === 90;
+      
+      const canvasWidth = isHorizontal ? editorImgObj.height : editorImgObj.width;
+      const canvasHeight = isHorizontal ? editorImgObj.width : editorImgObj.height;
+      
+      canvasEditor.width = canvasWidth;
+      canvasEditor.height = canvasHeight;
+      
+      ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+      ctx.save();
+      
+      // Rotaciona a partir do centro
+      ctx.translate(canvasWidth / 2, canvasHeight / 2);
+      ctx.rotate(anguloRadiano);
+      
+      // Controla o espelhamento da imagem
+      const escalaH = editorInvertidoH ? -1 : 1;
+      const escalaV = editorInvertidoV ? -1 : 1;
+      ctx.scale(escalaH, escalaV);
+      
+      // Renderiza a imagem rotacionada e espelhada
+      ctx.drawImage(editorImgObj, -editorImgObj.width / 2, -editorImgObj.height / 2);
+      ctx.restore();
+
+      // Aplica efeito preto e branco se ativo
+      if (editorPretoBranco) {
+        const imgData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
+        const data = imgData.data;
+        for (let i = 0; i < data.length; i += 4) {
+          const r = data[i];
+          const g = data[i + 1];
+          const b = data[i + 2];
+          // Luma formula para escala de cinzas
+          const cinza = 0.299 * r + 0.587 * g + 0.114 * b;
+          data[i] = cinza;     // R
+          data[i + 1] = cinza; // G
+          data[i + 2] = cinza; // B
+        }
+        ctx.putImageData(imgData, 0, 0);
+      }
+    }
+
+    // Ferramentas de Ajustes Geométricos
+    window.editorRotacionar = function(graus) {
+      editorRotacao = (editorRotacao + graus) % 360;
+      if (editorRotacao < 0) editorRotacao += 360;
+      desenharCanvasEditor();
+    };
+
+    window.editorInverterHorizontal = function() {
+      editorInvertidoH = !editorInvertidoH;
+      desenharCanvasEditor();
+    };
+
+    window.editorInverterVertical = function() {
+      editorInvertidoV = !editorInvertidoV;
+      desenharCanvasEditor();
+    };
+
+    window.editorAlternarPretoBranco = function() {
+      editorPretoBranco = !editorPretoBranco;
+      const btn = document.getElementById("btnToolGrayscale");
+      if (editorPretoBranco) {
+        btn.classList.add("active");
+      } else {
+        btn.classList.remove("active");
+      }
+      desenharCanvasEditor();
+    };
+
+    window.editorResetarAjustes = function() {
+      editorRotacao = 0;
+      editorInvertidoH = false;
+      editorInvertidoV = false;
+      editorPretoBranco = false;
+      document.getElementById("btnToolGrayscale").classList.remove("active");
+      desenharCanvasEditor();
+    };
+
+    // Converte a edição de imagem do estúdio em base64 e atualiza o preview do formulário
+    window.salvarEdicaoImagemEstudio = function() {
+      if (!canvasEditor) return;
+      
+      const novaImagemBase64 = canvasEditor.toDataURL("image/jpeg", 0.75);
+      imagemBase64FormTemp = novaImagemBase64;
+      exibirPreviewForm(novaImagemBase64);
+      
+      fecharEstudioEditor();
+      emitirNotificacao("Ajustes aplicados na imagem do cadastro!");
     };
 
     // Navegação Reativa Sem Redirecionamentos (SPA)
@@ -1547,7 +1892,6 @@
       const input = event.target;
       if (input.files && input.files[0]) {
         try {
-          // Compacta e converte
           imagemBase64FormTemp = await converterImagemCompacta(input.files[0]);
           exibirPreviewForm(imagemBase64FormTemp);
         } catch (erro) {
@@ -1614,10 +1958,8 @@
           fecharEstadoEdicaoForm();
         }
 
-        // Persistência com rollback seguro contra estouro
         guardarLocalStore();
         
-        // Limpeza física total do formulário e preview
         formCadastro.reset();
         removerImagemPreview();
         atualizarListagens();
@@ -1632,7 +1974,6 @@
       } catch (e) {
         console.error("Estouro de armazenamento local detectado:", e);
         emitirNotificacao("Erro crítico: Limite de armazenamento excedido! Operação cancelada.");
-        // Rollback imediato reimportando os dados antigos preservados em disco
         try {
           dados = JSON.parse(localStorage.getItem("cadastros")) || [];
           atualizarListagens();
@@ -1642,19 +1983,17 @@
       }
     }
 
-    // Calcula de forma fidedigna o consumo de espaço no LocalStorage
     function calcularConsumoEspaco() {
       try {
         let totalBytes = 0;
         for (let key in localStorage) {
           if (localStorage.hasOwnProperty(key)) {
-            // Cada caractere String em JS consome 2 bytes (codificação UTF-16)
             totalBytes += (localStorage[key].length + key.length) * 2;
           }
         }
         
         const megabytes = totalBytes / (1024 * 1024);
-        const limiteDesejado = 5.0; // 5MB limite aproximado padrão de navegadores móveis
+        const limiteDesejado = 5.0; 
         const percentual = Math.min((megabytes / limiteDesejado) * 100, 100);
 
         const lbl = document.getElementById("storageSizeLabel");
@@ -1677,13 +2016,11 @@
       }
     }
 
-    // Atualiza dinamicamente as opções do drop box de afiliados
     function atualizarDropdownAfiliados() {
       const selectAfiliado = document.getElementById("afiliado");
       if (!selectAfiliado) return;
 
       const valorSelecionado = selectAfiliado.value;
-
       const celularesUnicos = [...new Set(dados.map(d => d.celular).filter(Boolean))];
 
       selectAfiliado.innerHTML = '<option value="">Selecione um Afiliado (Celular)</option>';
@@ -1700,7 +2037,6 @@
       }
     }
 
-    // Popula o seletor de filtros dinâmicos na aba "Prontas"
     function atualizarDropdownFiltroCards() {
       const filtroSel = document.getElementById("filtroAfiliadoCards");
       if (!filtroSel) return;
@@ -1721,7 +2057,6 @@
       }
     }
 
-    // Atualização de dados assíncrona/reativa
     function atualizarListagens() {
       atualizarDropdownAfiliados();
       atualizarDropdownFiltroCards();
@@ -1729,7 +2064,6 @@
       renderizarCartoesProntas();
     }
 
-    // Renderização simplificada de gestão de cadastros
     function renderizarIdsSimplificados() {
       const listaIdsContainer = document.getElementById("listaIds");
       if (!listaIdsContainer) return;
@@ -1756,7 +2090,6 @@
       });
     }
 
-    // Ativação do fluxo de Edição no formulário
     window.iniciarEdicaoFluxo = function(idx) {
       if (!dados[idx]) return;
 
@@ -1774,7 +2107,6 @@
         document.getElementById("afiliado").value = dados[idx].afiliado || "";
       }
 
-      // Sincroniza a imagem de pré-visualização se houver uma ativa
       if (dados[idx].imagem) {
         imagemBase64FormTemp = dados[idx].imagem;
         exibirPreviewForm(imagemBase64FormTemp);
@@ -1782,7 +2114,6 @@
         removerImagemPreview();
       }
 
-      // Modificações de UI para Edição
       document.getElementById("tituloCadastroSecao").innerText = "Editar Cadastro";
       const btn = document.getElementById("btnSalvar");
       btn.innerText = "Atualizar Cadastro";
@@ -1796,7 +2127,6 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    // Fechar estado gráfico de edição
     function fecharEstadoEdicaoForm() {
       editandoIdx = -1;
       document.getElementById("tituloCadastroSecao").innerText = "Novo Cadastro";
@@ -1813,7 +2143,6 @@
       emitirNotificacao("Edição cancelada.");
     };
 
-    // Compressão de imagens usando Canvas (Otimizado para evitar redimensionar imagens menores que o limite)
     function converterImagemCompacta(arquivo) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -1852,7 +2181,6 @@
       });
     }
 
-    // Filtra dinamicamente em tempo real os cartões exibidos na aba "Prontas"
     function filtrarCartoesProntas() {
       const termo = document.getElementById("inputPesquisa").value.toLowerCase().trim();
       const filtroAfiliado = document.getElementById("filtroAfiliadoCards").value;
@@ -1880,7 +2208,6 @@
       });
     }
 
-    // Renderização dos cartões na seção "Prontas"
     function renderizarCartoesProntas() {
       const containerProntas = document.getElementById("listaCompleta");
       if (!containerProntas) return;
@@ -1903,7 +2230,6 @@
         const apenasNumCelular = val.celular ? val.celular.replace(/\D/g, '') : '';
         const apenasNumAfiliado = val.afiliado ? val.afiliado.replace(/\D/g, '') : '';
 
-        // Cria container individual com tags de busca integradas
         const cardContainer = document.createElement("div");
         cardContainer.className = "card card-exibicao card-item-exibicao-alvo";
         cardContainer.setAttribute("data-id", val.id.toLowerCase());
@@ -1912,7 +2238,6 @@
         cardContainer.setAttribute("data-afiliado", val.afiliado || "");
 
         cardContainer.innerHTML = `
-          <!-- 1. Imagem posicionada no Topo (Com funcionalidade de Zoom) -->
           ${val.imagem ? `
             <div class="card-media" style="cursor: pointer;" onclick="abrirModalImagem(${originalIdx})" title="Clique para ampliar">
               <img src="${val.imagem}" alt="Imagem do ID ${val.id}">
@@ -1923,12 +2248,10 @@
             </div>
           `}
 
-          <!-- 2. ID posicionado imediatamente após a Imagem -->
           <div class="card-header-exibicao">
             <span class="tag-id">🆔 ID: ${val.id}</span>
           </div>
 
-          <!-- 3. Dados do Cartão -->
           <div class="card-body">
             <div class="info-group">
               <div class="info-item">
@@ -1962,7 +2285,6 @@
               </div>
             ` : ''}
 
-            <!-- Ações Rápidas de Cópia Integrada -->
             <div class="card-quick-actions">
               <button class="btn-quick-action btn-copy-celular" onclick="copiarFluxo('${apenasNumCelular}', this, '📱 Celular')">
                 📱 Celular
@@ -1996,7 +2318,6 @@
                 </button>
               `}
 
-              <!-- Botão Dinâmico de Compartilhamento Externo -->
               <button class="btn-quick-action btn-share-card btn-span-2" onclick="compartilharRegistroCompleto('${val.id}', '${val.celular}', '${val.pix}', '${val.link}', '${val.afiliado}')">
                 📤 Compartilhar Detalhes
               </button>
@@ -2007,7 +2328,6 @@
       });
     }
 
-    // API de Backup e Exportação
     function fluxoExportarArquivo() {
       if (dados.length === 0) {
         emitirNotificacao("Não existem registros cadastrados para exportar.");
@@ -2040,7 +2360,6 @@
       }
     }
 
-    // Função para IMPORTAR arquivo JSON carregado com validação preventiva de tamanho
     function fluxoImportarArquivo() {
       const input = document.getElementById("importArquivoInput");
       
@@ -2051,8 +2370,7 @@
 
       const arquivo = input.files[0];
 
-      // Proteção de memória contra arquivos abusivos
-      if (arquivo.size > 15 * 1024 * 1024) { // Limite máximo tolerado de 15MB
+      if (arquivo.size > 15 * 1024 * 1024) { 
         emitirNotificacao("Erro: Arquivo grande demais (Máximo: 15MB).");
         return;
       }
@@ -2092,11 +2410,10 @@
       leitor.readAsText(arquivo);
     }
 
-    // API de Área de Transferência com suporte a iFrames e WebViews
     window.copiarFluxo = function(texto, botaoRef, originalLabel) {
       if (!texto) return;
 
-      const htmlOriginal = botaoRef.innerHTML; // Preserva o elemento bruto completo incluindo os emojis estruturados
+      const htmlOriginal = botaoRef.innerHTML; 
       const backgroundOriginal = botaoRef.style.background;
       const colorOriginal = botaoRef.style.color;
 
@@ -2108,7 +2425,7 @@
         emitirNotificacao(`Conteúdo copiado!`);
 
         setTimeout(() => {
-          botaoRef.innerHTML = htmlOriginal; // Repõe o HTML completo perfeitamente sem perdas
+          botaoRef.innerHTML = htmlOriginal; 
           botaoRef.style.background = backgroundOriginal;
           botaoRef.style.color = colorOriginal;
         }, 1500);
@@ -2158,7 +2475,6 @@
       }
     }
 
-    // API Inteligente de Compartilhamento Nativo e Consolidado
     window.compartilharRegistroCompleto = function(id, celular, pix, link, afiliado) {
       let msg = `📋 *DETALHES DO REGISTRO*\n\n`;
       msg += `🆔 *ID:* ${id}\n`;
@@ -2178,7 +2494,6 @@
           console.log("Compartilhamento nativo cancelado ou abortado:", err);
         });
       } else {
-        // Fallback: Copia o bloco de texto consolidado para colar no WhatsApp/Mensagens
         if (navigator.clipboard && window.isSecureContext) {
           navigator.clipboard.writeText(msg).then(() => {
             emitirNotificacao("Texto consolidado copiado! Cole onde quiser.");
