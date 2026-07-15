@@ -4,7 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Gestor de Cadastros Otimizado</title>
-  <!-- Manifesto inline configurado para carregar especificamente a página ind.html ao ser aberto -->
+  
+  <!-- Meta tags adicionais para SEO e renderização mobile -->
+  <meta name="description" content="Gestor de cadastros local, rápido e otimizado para o seu dia a dia profissional.">
+  <meta name="theme-color" content="#4f46e5">
+  <link rel="icon" type="image/png" href="https://placehold.co/192x192/4f46e5/ffffff?text=GC">
+
+  <!-- Manifesto inline configurado para carregar especificamente a página ind2.html ao ser aberto -->
   <link rel="manifest" href='data:application/manifest+json,%7B%22name%22%3A%22Gestor%20de%20Cadastros%20Otimizado%22%2C%22short_name%22%3A%22GestorCadastros%22%2C%22start_url%22%3A%22ind2.html%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23f8fafc%22%2C%22theme_color%22%3A%22%234f46e5%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22https%3A%2F%2Fplacehold.co%2F192x192%2F4f46e5%2Fffffff%3Ftext%3DGC%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fpng%22%7D%2C%7B%22src%22%3A%22https%3A%2F%2Fplacehold.co%2F512x512%2F4f46e5%2Fffffff%3Ftext%3DGC%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fpng%22%7D%5D%7D' />
   
   <style>
@@ -977,11 +983,11 @@
   <!-- Modal Customizado de Confirmação de Exclusão Individual -->
   <div id="modalExcluirConfirm" class="modal-overlay" aria-hidden="true">
     <div class="modal-box">
-      <h4 id="modalExcluirTitulo">Confirmar Eliminação</h4>
-      <p id="modalExcluirMensagem">Deseja realmente eliminar este registo permanentemente?</p>
+      <h4 id="modalExcluirTitulo">Confirmar Exclusão</h4>
+      <p id="modalExcluirMensagem">Deseja realmente excluir este registro permanentemente?</p>
       <div class="modal-actions">
         <button class="btn-fechar" onclick="fecharModalConfirmacao()">Cancelar</button>
-        <button id="btnConfirmarExclusaoReal" class="btn-acao-destrutiva">Eliminar</button>
+        <button id="btnConfirmarExclusaoReal" class="btn-acao-destrutiva">Excluir</button>
       </div>
     </div>
   </div>
@@ -995,6 +1001,14 @@
         <button class="btn-fechar" onclick="fecharModalLimpar()">Cancelar</button>
         <button onclick="confirmarLimparBanco()" class="btn-acao-destrutiva">Limpar Tudo</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Modal Customizado para Zoom de Imagens (Nova Funcionalidade) -->
+  <div id="modalImagemZoom" class="modal-overlay" aria-hidden="true" onclick="fecharModalImagem()">
+    <div class="modal-box" style="max-width: 480px; padding: 12px; position: relative; display: flex; flex-direction: column;" onclick="event.stopPropagation()">
+      <button type="button" style="position: absolute; top: -12px; right: -12px; background-color: var(--danger-color); color: #ffffff; border: none; border-radius: 50%; width: 32px; height: 32px; font-size: 0.9rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-md); transition: var(--transition); z-index: 10002;" onclick="fecharModalImagem()" title="Fechar">✕</button>
+      <img id="modalImagemZoomElement" src="" alt="Imagem ampliada" style="width: 100%; max-height: 70vh; object-fit: contain; border-radius: var(--radius-md);">
     </div>
   </div>
 
@@ -1092,7 +1106,7 @@
       <h2 id="tituloCadastroSecao">Novo Cadastro</h2>
 
       <form id="formCadastro">
-        <input type="tel" id="celular" inputmode="numeric" placeholder="Celular" required autocomplete="tel">
+        <input type="tel" id="celular" inputmode="numeric" pattern="[0-9]*" placeholder="Celular" required autocomplete="tel">
         <input type="text" id="id" inputmode="numeric" pattern="[0-9]*" placeholder="ID" required>
         <input type="text" id="pix" placeholder="Chave Pix (Opcional)">
         <input type="url" id="link" placeholder="Endereço Link" required autocomplete="url">
@@ -1104,7 +1118,7 @@
         
         <!-- Visualização Dinâmica do Preview no Formulário -->
         <div id="previewWrapper" class="form-image-preview-wrapper">
-          <img id="imagePreviewElement" src="" alt="Pré-visualização do ficheiro">
+          <img id="imagePreviewElement" src="" alt="Pré-visualização do arquivo">
           <button type="button" class="btn-remove-preview" onclick="removerImagemPreview()" title="Remover imagem">✕</button>
         </div>
 
@@ -1291,7 +1305,7 @@
       return (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true);
     }
 
-    // Monitora e atualiza a UI se o aplicativo já estiver instalado
+    // Monitora e atualiza a UI se o aplicativo já estiver instalado (Otimizado para ocultar o card)
     function verificarSinalizadorPWA() {
       const isSecure = window.location.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
       const isIFrame = window.self !== window.top;
@@ -1299,10 +1313,10 @@
       console.log("[PWA Status]: Contexto Seguro:", isSecure, " | Dentro de Iframe:", isIFrame, " | Já Instalado:", isAppInstalado());
 
       const btnInstalar = document.getElementById("btnInstalarPWA");
-      if (btnInstalar && isAppInstalado()) {
-        btnInstalar.innerHTML = "✅ Aplicativo Instalado";
-        btnInstalar.style.backgroundColor = "#64748b";
-        btnInstalar.disabled = true;
+      const cardInstalacao = btnInstalar ? btnInstalar.closest('.backup-card') : null;
+
+      if (isAppInstalado() && cardInstalacao) {
+        cardInstalacao.style.display = "none"; // Remove visualmente o painel redundante
       }
     }
 
@@ -1375,14 +1389,14 @@
       }, tempo);
     }
 
-    // Modal para Confirmação Segura de Eliminações individuais (CORRIGIDO)
-    function pedirConfirmacaoEliminar(idx) {
+    // Modal para Confirmação Segura de Exclusões individuais (Corrigido para Português do Brasil)
+    function pedirConfirmacaoExcluir(idx) {
       exclusaoAlvoIdx = idx;
       const idRegistro = dados[idx] ? dados[idx].id : '';
       
       const elemMsg = document.getElementById("modalExcluirMensagem");
       if (elemMsg) {
-        elemMsg.innerText = `Tem a certeza que deseja eliminar o registo ID: ${idRegistro} permanentemente?`;
+        elemMsg.innerText = `Deseja realmente excluir o registro de ID ${idRegistro} permanentemente?`;
       }
       
       modalExcluir.classList.add("show");
@@ -1434,6 +1448,32 @@
       emitirNotificacao("Todos os dados foram limpos do dispositivo!");
       navegarAbas('home');
     }
+
+    // Funções de Controle do Modal de Zoom das Imagens
+    window.abrirModalImagem = function(idx) {
+      if (dados[idx] && dados[idx].imagem) {
+        const modal = document.getElementById("modalImagemZoom");
+        const imgZoom = document.getElementById("modalImagemZoomElement");
+        if (modal && imgZoom) {
+          imgZoom.src = dados[idx].imagem;
+          modal.classList.add("show");
+          modal.setAttribute("aria-hidden", "false");
+        }
+      }
+    };
+
+    window.fecharModalImagem = function() {
+      const modal = document.getElementById("modalImagemZoom");
+      const imgZoom = document.getElementById("modalImagemZoomElement");
+      if (modal) {
+        modal.classList.remove("show");
+        modal.setAttribute("aria-hidden", "true");
+      }
+      if (imgZoom) {
+        // Limpa o src após a transição de saída para otimizar memória
+        setTimeout(() => { imgZoom.src = ""; }, 200);
+      }
+    };
 
     // Navegação Reativa Sem Redirecionamentos (SPA)
     function navegarAbas(secaoDestino) {
@@ -1535,7 +1575,7 @@
       if (input) input.value = "";
     }
 
-    // Submissão Otimizada do Formulário com Compressão e Prevenção de perda de dados (Sugestão 5 integrada)
+    // Submissão Otimizada do Formulário com Compressão e Prevenção de perda de dados
     if (formCadastro) {
       formCadastro.addEventListener("submit", async (e) => {
         e.preventDefault();
@@ -1558,26 +1598,26 @@
         if (editandoIdx === -1) {
           const conflito = dados.some(d => d.id === id);
           if (conflito) {
-            emitirNotificacao("Erro: Este ID já se encontra registado.");
+            emitirNotificacao("Erro: Este ID já se encontra cadastrado.");
             return;
           }
           dados.push(novoRegisto);
-          emitirNotificacao("Registo gravado!");
+          emitirNotificacao("Registro gravado!");
         } else {
           const conflito = dados.some((d, idx) => d.id === id && idx !== editandoIdx);
           if (conflito) {
-            emitirNotificacao("Erro: Este ID já está a ser utilizado.");
+            emitirNotificacao("Erro: Este ID já está sendo utilizado.");
             return;
           }
           dados[editandoIdx] = novoRegisto;
-          emitirNotificacao("Registo atualizado!");
+          emitirNotificacao("Registro atualizado!");
           fecharEstadoEdicaoForm();
         }
 
-        // Persistência com rollback seguro contra estouro (Sugestão 3 integrada)
+        // Persistência com rollback seguro contra estouro
         guardarLocalStore();
         
-        // Limpeza física total do formulário e preview (Sugestão 5 integrada)
+        // Limpeza física total do formulário e preview
         formCadastro.reset();
         removerImagemPreview();
         atualizarListagens();
@@ -1709,7 +1749,7 @@
             </div>
             <div class="card-actions-row">
               <button class="btn-editar" onclick="iniciarEdicaoFluxo(${idx})">✏️ Editar</button>
-              <button class="btn-excluir" onclick="pedirConfirmacaoEliminar(${idx})">🗑️ Excluir</button>
+              <button class="btn-excluir" onclick="pedirConfirmacaoExcluir(${idx})">🗑️ Excluir</button>
             </div>
           </div>
         `;
@@ -1773,7 +1813,7 @@
       emitirNotificacao("Edição cancelada.");
     };
 
-    // Compressão de imagens usando Canvas
+    // Compressão de imagens usando Canvas (Otimizado para evitar redimensionar imagens menores que o limite)
     function converterImagemCompacta(arquivo) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -1790,13 +1830,11 @@
             let width = img.width;
             let height = img.height;
 
-            if (width > height) {
-              if (width > LIMITE_MAX_LARGURA) {
+            if (width > LIMITE_MAX_LARGURA || height > LIMITE_MAX_ALTURA) {
+              if (width > height) {
                 height *= LIMITE_MAX_LARGURA / width;
                 width = LIMITE_MAX_LARGURA;
-              }
-            } else {
-              if (height > LIMITE_MAX_ALTURA) {
+              } else {
                 width *= LIMITE_MAX_ALTURA / height;
                 height = LIMITE_MAX_ALTURA;
               }
@@ -1851,7 +1889,7 @@
         containerProntas.innerHTML = `
           <div class="sem-dados">
             <span style="font-size: 3rem;">📂</span>
-            <p>Nenhum registo disponível.</p>
+            <p>Nenhum registro disponível.</p>
             <button onclick="navegarAbas('cadastro')" class="btn-ir-cadastrar">Fazer Cadastro</button>
           </div>`;
         return;
@@ -1874,9 +1912,9 @@
         cardContainer.setAttribute("data-afiliado", val.afiliado || "");
 
         cardContainer.innerHTML = `
-          <!-- 1. Imagem posicionada no Topo -->
+          <!-- 1. Imagem posicionada no Topo (Com funcionalidade de Zoom) -->
           ${val.imagem ? `
-            <div class="card-media">
+            <div class="card-media" style="cursor: pointer;" onclick="abrirModalImagem(${originalIdx})" title="Clique para ampliar">
               <img src="${val.imagem}" alt="Imagem do ID ${val.id}">
             </div>
           ` : `
@@ -1924,7 +1962,7 @@
               </div>
             ` : ''}
 
-            <!-- Ações Rápidas de Cópia Integrada (Sugestão 4 com retenção total do innerHTML ativo) -->
+            <!-- Ações Rápidas de Cópia Integrada -->
             <div class="card-quick-actions">
               <button class="btn-quick-action btn-copy-celular" onclick="copiarFluxo('${apenasNumCelular}', this, '📱 Celular')">
                 📱 Celular
@@ -1958,9 +1996,9 @@
                 </button>
               `}
 
-              <!-- Botão Dinâmico de Partilha Externa -->
-              <button class="btn-quick-action btn-share-card btn-span-2" onclick="partilharRegistoCompleto('${val.id}', '${val.celular}', '${val.pix}', '${val.link}', '${val.afiliado}')">
-                📤 Partilhar Detalhes
+              <!-- Botão Dinâmico de Compartilhamento Externo -->
+              <button class="btn-quick-action btn-share-card btn-span-2" onclick="compartilharRegistroCompleto('${val.id}', '${val.celular}', '${val.pix}', '${val.link}', '${val.afiliado}')">
+                📤 Compartilhar Detalhes
               </button>
             </div>
           </div>
@@ -2015,7 +2053,7 @@
 
       // Proteção de memória contra arquivos abusivos
       if (arquivo.size > 15 * 1024 * 1024) { // Limite máximo tolerado de 15MB
-        emitirNotificacao("Erro: Arquivo demasiado grande (Máximo: 15MB).");
+        emitirNotificacao("Erro: Arquivo grande demais (Máximo: 15MB).");
         return;
       }
 
@@ -2054,7 +2092,7 @@
       leitor.readAsText(arquivo);
     }
 
-    // API de Área de Transferência com suporte a iFrames e WebViews (Sugestão 4 nativa)
+    // API de Área de Transferência com suporte a iFrames e WebViews
     window.copiarFluxo = function(texto, botaoRef, originalLabel) {
       if (!texto) return;
 
@@ -2120,9 +2158,9 @@
       }
     }
 
-    // API Inteligente de Partilha Nativa e Consolidada (Web Share API com Fallback estruturado)
-    window.partilharRegistoCompleto = function(id, celular, pix, link, afiliado) {
-      let msg = `📋 *DETALHES DO REGISTO*\n\n`;
+    // API Inteligente de Compartilhamento Nativo e Consolidado
+    window.compartilharRegistroCompleto = function(id, celular, pix, link, afiliado) {
+      let msg = `📋 *DETALHES DO REGISTRO*\n\n`;
       msg += `🆔 *ID:* ${id}\n`;
       msg += `📱 *Celular:* ${celular}\n`;
       if (pix) msg += `🔑 *Pix:* ${pix}\n`;
@@ -2132,12 +2170,12 @@
 
       if (navigator.share) {
         navigator.share({
-          title: `Registo ID: ${id}`,
+          title: `Registro ID: ${id}`,
           text: msg
         })
-        .then(() => emitirNotificacao("Informações partilhadas com sucesso!"))
+        .then(() => emitirNotificacao("Informações compartilhadas com sucesso!"))
         .catch((err) => {
-          console.log("Partilha nativa cancelada ou abortada:", err);
+          console.log("Compartilhamento nativo cancelado ou abortado:", err);
         });
       } else {
         // Fallback: Copia o bloco de texto consolidado para colar no WhatsApp/Mensagens
@@ -2147,7 +2185,7 @@
           });
         } else {
           metodoFallbackCopia(msg, () => {
-            emitirNotificacao("Texto de partilha copiado!");
+            emitirNotificacao("Texto de compartilhamento copiado!");
           });
         }
       }
