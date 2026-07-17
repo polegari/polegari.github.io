@@ -1,1205 +1,134 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" class="h-full">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Gestor de Cadastros Otimizado</title>
   
-  <!-- Meta tags adicionais para SEO e renderização mobile -->
   <meta name="description" content="Gestor de cadastros local, rápido e otimizado para o seu dia a dia profissional.">
   <meta name="theme-color" content="#4f46e5">
   <link rel="icon" type="image/png" href="https://placehold.co/192x192/4f46e5/ffffff?text=GC">
 
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          boxShadow: {
+            'glow': '0 0 15px -3px rgba(99, 102, 241, 0.4)',
+            'glass': '0 8px 32px 0 rgba(15, 23, 42, 0.3)',
+          }
+        }
+      }
+    }
+  </script>
+
   <!-- Manifesto inline configurado para carregar especificamente a página ind2.html ao ser aberto -->
   <link rel="manifest" href='data:application/manifest+json,%7B%22name%22%3A%22Gestor%20de%20Cadastros%20Otimizado%22%2C%22short_name%22%3A%22GestorCadastros%22%2C%22start_url%22%3A%22ind2.html%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23f8fafc%22%2C%22theme_color%22%3A%22%234f46e5%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22https%3A%2F%2Fplacehold.co%2F192x192%2F4f46e5%2Fffffff%3Ftext%3DGC%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fpng%22%7D%2C%7B%22src%22%3A%22https%3A%2F%2Fplacehold.co%2F512x512%2F4f46e5%2Fffffff%3Ftext%3DGC%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fpng%22%7D%5D%7D' />
-  
+
   <style>
-    :root {
-      --primary-color: #4f46e5;
-      --primary-hover: #4338ca;
-      --success-color: #10b981;
-      --success-hover: #059669;
-      --danger-color: #ef4444;
-      --danger-hover: #dc2626;
-      --warning-color: #f59e0b;
-      --warning-hover: #d97706;
-      
-      --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-      --card-bg: #ffffff;
-      --text-main: #1e293b;
-      --text-muted: #64748b;
-      --border-color: #cbd5e1;
-      --border-focus: #818cf8;
-      
-      --radius-lg: 20px;
-      --radius-md: 14px;
-      --radius-sm: 8px;
-      
-      --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
-      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
-      --shadow-lg: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.08);
-      
-      --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
-
-    body {
-      background: var(--bg-gradient);
-      color: var(--text-main);
-      min-height: 100vh;
-      padding-bottom: 110px;
-      line-height: 1.5;
-      overflow-x: hidden;
-    }
-
-    .container {
-      width: 100%;
-      max-width: 500px;
-      margin: 0 auto;
-      padding: 24px 16px;
-      display: flex;
-      flex-direction: column;
-    }
-
+    /* Transições suaves e desfoque de fundo customizados */
     .view-section {
       display: none;
       opacity: 0;
-      transform: translateY(12px);
-      transition: opacity 0.25s ease-out, transform 0.25s ease-out;
+      transform: translateY(16px);
+      transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
-
     .view-section.active {
       display: flex;
       flex-direction: column;
       opacity: 1;
       transform: translateY(0);
     }
-
-    h1 {
-      font-size: 2.2rem;
-      font-weight: 850;
-      text-align: center;
-      color: #0f172a;
-      margin-top: 20px;
-      margin-bottom: 10px;
-      letter-spacing: -0.03em;
-    }
-
-    h2 {
-      font-size: 1.6rem;
-      font-weight: 800;
-      color: #0f172a;
-      margin-bottom: 24px;
-      text-align: center;
-      letter-spacing: -0.02em;
-    }
-
-    h3 {
-      font-size: 1.2rem;
-      font-weight: 700;
-      color: #1e293b;
-      margin: 28px 0 16px 0;
-      align-self: flex-start;
-    }
-
-    p {
-      color: var(--text-muted);
-      text-align: center;
-      font-size: 1rem;
-      margin-bottom: 24px;
-    }
-
-    hr {
-      border: 0;
-      height: 1px;
-      background: rgba(203, 213, 225, 0.6);
-      margin: 30px 0;
-    }
-
-    form {
-      background: var(--card-bg);
-      padding: 24px;
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-lg);
-      border: 1px solid rgba(255, 255, 255, 0.8);
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    input[type="text"],
-    input[type="url"],
-    input[type="tel"],
-    select {
-      width: 100%;
-      padding: 14px 16px;
-      border: 1.5px solid var(--border-color);
-      border-radius: var(--radius-md);
-      font-size: 0.95rem;
-      color: var(--text-main);
-      background-color: #f8fafc;
-      transition: var(--transition);
-      -webkit-appearance: none;
-    }
-
-    select {
-      background-image: url("data:image/svg+xml;utf8,<svg fill='%2364748b' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>");
-      background-repeat: no-repeat;
-      background-position: right 14px center;
-      background-size: 20px;
-      cursor: pointer;
-    }
-
-    input[type="text"]:focus,
-    input[type="url"]:focus,
-    input[type="tel"]:focus,
-    select:focus {
-      outline: none;
-      border-color: var(--border-focus);
-      background-color: #ffffff;
-      box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
-    }
-
-    .file-input-wrapper {
-      position: relative;
-      width: 100%;
-    }
-
-    input[type="file"] {
-      width: 100%;
-      padding: 12px;
-      background: #f1f5f9;
-      border-radius: var(--radius-md);
-      border: 2px dashed #cbd5e1;
-      cursor: pointer;
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      transition: var(--transition);
-    }
-
-    input[type="file"]:hover {
-      border-color: var(--primary-color);
-      background: #eef2f6;
-    }
-
-    /* Elemento de Pré-visualização de Imagem Interativa no Formulário */
-    .form-image-preview-wrapper {
-      display: none;
-      position: relative;
-      align-self: center;
-      width: 140px;
-      height: 140px;
-      border-radius: var(--radius-md);
-      overflow: hidden;
-      border: 2.5px dashed var(--primary-color);
-      box-shadow: var(--shadow-md);
-      margin: 8px 0;
-      cursor: pointer;
-      transition: var(--transition);
-    }
-
-    .form-image-preview-wrapper img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    /* Overlay para indicar que a imagem de preview é gerenciável e clicável */
-    .form-image-preview-overlay {
-      position: absolute;
-      inset: 0;
-      background: rgba(15, 23, 42, 0.6);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      opacity: 0;
-      transition: var(--transition);
-      font-size: 0.75rem;
-      font-weight: 700;
-      text-align: center;
-      padding: 8px;
-    }
-
-    .form-image-preview-wrapper:hover {
-      transform: scale(1.03);
-    }
-
-    .form-image-preview-wrapper:hover .form-image-preview-overlay {
-      opacity: 1;
-    }
-
-    .form-image-preview-wrapper .btn-remove-preview {
-      position: absolute;
-      top: 6px;
-      right: 6px;
-      background-color: rgba(239, 68, 68, 0.9);
-      color: #ffffff;
-      border: none;
-      border-radius: 50%;
-      width: 24px;
-      height: 24px;
-      font-size: 0.75rem;
-      font-weight: 800;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: var(--shadow-sm);
-      transition: var(--transition);
-      z-index: 10;
-    }
-
-    .form-image-preview-wrapper .btn-remove-preview:hover {
-      background-color: var(--danger-hover);
-      transform: scale(1.1);
-    }
-
-    form button[type="submit"] {
-      width: 100%;
-      padding: 14px;
-      font-size: 1rem;
-      font-weight: 700;
-      border: none;
-      background-color: var(--primary-color);
-      color: #ffffff;
-      border-radius: var(--radius-md);
-      cursor: pointer;
-      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
-      transition: var(--transition);
-    }
-
-    form button[type="submit"]:hover {
-      background-color: var(--primary-hover);
-      transform: translateY(-1px);
-    }
-
-    form button[type="submit"]:active {
-      transform: translateY(1px);
-    }
-
-    .btn-cancelar-edicao {
-      width: 100%;
-      padding: 12px;
-      font-size: 0.9rem;
-      font-weight: 650;
-      border: 1.5px solid var(--border-color);
-      background-color: transparent;
-      color: var(--text-muted);
-      border-radius: var(--radius-md);
-      cursor: pointer;
-      transition: var(--transition);
-    }
-
-    .btn-cancelar-edicao:hover {
-      background-color: #f1f5f9;
-      color: var(--text-main);
-    }
-
-    .sem-dados {
-      text-align: center;
-      background: rgba(255, 255, 255, 0.6);
-      border: 1.5px dashed var(--border-color);
-      border-radius: var(--radius-lg);
-      padding: 40px 24px;
-      color: var(--text-muted);
-      font-weight: 500;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 12px;
-      margin-top: 10px;
-      width: 100%;
-    }
-
-    /* Barra de Pesquisa e Filtros */
-    .search-box-wrapper {
-      background: var(--card-bg);
-      border-radius: var(--radius-lg);
-      padding: 16px;
-      margin-bottom: 20px;
-      box-shadow: var(--shadow-sm);
-      border: 1px solid rgba(226, 232, 240, 0.8);
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .search-input-group {
-      position: relative;
-      display: flex;
-      align-items: center;
-    }
-
-    .search-input-icon {
-      position: absolute;
-      left: 14px;
-      font-size: 1.1rem;
-      color: var(--text-muted);
-      pointer-events: none;
-    }
-
-    .search-box-wrapper input[type="text"] {
-      padding-left: 42px;
-    }
-
-    .filter-row {
-      display: flex;
-      gap: 8px;
-    }
-
-    .filter-row select {
-      flex: 1;
-      padding: 10px 14px;
-      font-size: 0.85rem;
-    }
-
-    #listaIds, #listaCompleta {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-    }
-
-    .card {
-      background: var(--card-bg);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-md);
-      border: 1px solid rgba(226, 232, 240, 0.7);
-      overflow: hidden;
-      transition: var(--transition);
-    }
-
-    .card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 16px 32px -8px rgba(15, 23, 42, 0.08);
-      border-color: rgba(99, 102, 241, 0.3);
-    }
-
-    .card-gestao {
-      padding: 16px 20px;
-      display: flex;
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .badge-id {
-      background: #f1f5f9;
-      color: #334155;
-      font-size: 0.9rem;
-      font-weight: 700;
-      padding: 6px 14px;
-      border-radius: 9999px;
-      border: 1px solid #e2e8f0;
-    }
-
-    .card-actions-row {
-      display: flex;
-      gap: 8px;
-    }
-
-    .card-actions-row button {
-      padding: 8px 12px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      border: none;
-      border-radius: var(--radius-sm);
-      cursor: pointer;
-      transition: var(--transition);
-    }
-
-    .btn-editar {
-      background-color: rgba(245, 158, 11, 0.15);
-      color: var(--warning-hover);
-    }
-
-    .btn-editar:hover {
-      background-color: var(--warning-color);
-      color: #ffffff;
-    }
-
-    .btn-excluir {
-      background-color: rgba(239, 68, 68, 0.1);
-      color: var(--danger-color);
-    }
-
-    .btn-excluir:hover {
-      background-color: var(--danger-color);
-      color: #ffffff;
-    }
-
-    .card-exibicao {
-      display: flex;
-      flex-direction: column;
-      text-align: left;
-      position: relative;
-      background: var(--card-bg);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-sm);
-      border: 1px solid rgba(226, 232, 240, 0.6);
-      transition: var(--transition);
-    }
-
-    .card-exibicao:hover {
-      transform: translateY(-4px);
-      box-shadow: var(--shadow-lg);
-      border-color: rgba(99, 102, 241, 0.35);
-    }
-
-    .card-header-exibicao {
-      padding: 12px 20px 16px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .tag-id {
-      background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
-      color: #ffffff;
-      font-weight: 800;
-      font-size: 0.85rem;
-      padding: 6px 14px;
-      border-radius: 9999px;
-      letter-spacing: 0.03em;
-      box-shadow: 0 4px 10px rgba(79, 70, 229, 0.15);
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .card-media {
-      position: relative;
-      width: calc(100% - 32px);
-      max-width: 100%;
-      height: 280px;
-      margin: 16px 16px 4px 16px;
-      overflow: hidden;
-      background-color: #0f172a;
-      border-radius: var(--radius-md);
-      border: 1px solid rgba(226, 232, 240, 0.8);
-      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
-    }
-
-    .card-media img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .card-exibicao:hover .card-media img {
-      transform: scale(1.03);
-    }
-
-    .card-media-placeholder {
-      width: calc(100% - 32px);
-      max-width: 100%;
-      height: 90px;
-      margin: 16px 16px 4px 16px;
-      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--text-muted);
-      font-size: 0.82rem;
-      font-weight: 600;
-      border-radius: var(--radius-md);
-      border: 1.5px dashed #cbd5e1;
-      gap: 6px;
-    }
-
-    .card-body {
-      padding: 0 20px 20px 20px;
-    }
-
-    .info-group {
-      margin-bottom: 10px;
-      background: #f8fafc;
-      border: 1px solid #f1f5f9;
-      border-radius: var(--radius-md);
-      padding: 10px 14px;
-      transition: var(--transition);
-    }
-
-    .info-group:hover {
-      background: #f1f5f9;
-      border-color: #cbd5e1;
-    }
-
-    .info-item {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    .info-label {
-      font-size: 0.72rem;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      font-weight: 800;
-      letter-spacing: 0.06em;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .info-value {
-      font-size: 0.95rem;
-      color: #0f172a;
-      font-weight: 700;
-      word-break: break-all;
-    }
-
-    .info-link {
-      font-size: 0.9rem;
-      color: var(--primary-color);
-      text-decoration: none;
-      font-weight: 700;
-      word-break: break-all;
-      display: inline-block;
-      transition: var(--transition);
-    }
-
-    .info-link:hover {
-      color: var(--primary-hover);
-      text-decoration: underline;
-    }
-
-    .card-quick-actions {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 8px;
-      width: 100%;
-      margin-top: 16px;
-    }
-
-    .btn-quick-action {
-      width: 100%;
-      padding: 10px 6px;
-      border-radius: var(--radius-md);
-      font-size: 0.8rem;
-      font-weight: 750;
-      border: 1px solid transparent;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 5px;
-      text-decoration: none;
-      transition: var(--transition);
-    }
-
-    .btn-copy-celular {
-      background-color: #f0fdf4;
-      color: #15803d;
-      border-color: rgba(22, 163, 74, 0.15);
-    }
-    .btn-copy-celular:hover {
-      background-color: #dcfce7;
-      border-color: rgba(22, 163, 74, 0.3);
-    }
-
-    .btn-copy-link {
-      background-color: #f5f3ff;
-      color: #6d28d9;
-      border-color: rgba(124, 58, 237, 0.15);
-    }
-    .btn-copy-link:hover {
-      background-color: #ede9fe;
-      border-color: rgba(124, 58, 237, 0.3);
-    }
-
-    .btn-copy-id {
-      background-color: #f8fafc;
-      color: #334155;
-      border: 1px solid #e2e8f0;
-    }
-    .btn-copy-id:hover {
-      background-color: #f1f5f9;
-      border-color: #cbd5e1;
-    }
-
-    .btn-copy-pix {
-      background-color: #ecfeff;
-      color: #0369a1;
-      border-color: rgba(14, 116, 144, 0.15);
-    }
-    .btn-copy-pix:hover {
-      background-color: #cffafe;
-      border-color: rgba(14, 116, 144, 0.3);
-    }
-
-    .btn-copy-afiliado {
-      background-color: #fff7ed;
-      color: #c2410c;
-      border-color: rgba(234, 88, 12, 0.15);
-    }
-    .btn-copy-afiliado:hover {
-      background-color: #ffedd5;
-      border-color: rgba(234, 88, 12, 0.3);
-    }
-
-    .btn-share-card {
-      background: linear-gradient(135deg, #eef2f6 0%, #cbd5e1 100%);
-      color: #0f172a;
-      border: 1px solid #94a3b8;
-    }
-    .btn-share-card:hover {
-      background: linear-gradient(135deg, #cbd5e1 0%, #94a3b8 100%);
-    }
-
-    .btn-span-2 {
-      grid-column: span 2;
-    }
-
-    .backup-actions-container {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      width: 100%;
-    }
-
-    .backup-card {
-      background: var(--card-bg);
-      border: 1px solid rgba(226, 232, 240, 0.8);
-      border-radius: var(--radius-lg);
-      padding: 20px;
-      box-shadow: var(--shadow-sm);
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .backup-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .backup-title {
-      font-size: 1.15rem;
-      font-weight: 800;
-      color: #0f172a;
-    }
-
-    .backup-desc {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      line-height: 1.45;
-    }
-
-    /* Indicador Visual da Quota de Armazenamento Local */
-    .storage-indicator-wrapper {
-      margin-top: 4px;
-      background: #f1f5f9;
-      border-radius: var(--radius-sm);
-      padding: 12px;
-      border: 1px solid #e2e8f0;
-    }
-
-    .storage-text-row {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.78rem;
-      font-weight: 700;
-      color: var(--text-main);
-      margin-bottom: 6px;
-    }
-
-    .storage-bar-bg {
-      width: 100%;
-      height: 8px;
-      background: #cbd5e1;
-      border-radius: 9999px;
-      overflow: hidden;
-    }
-
-    .storage-bar-fill {
-      height: 100%;
-      width: 0%;
-      background: var(--primary-color);
-      border-radius: 9999px;
-      transition: width 0.4s ease;
-    }
-
-    .btn-backup-action {
-      width: 100%;
-      padding: 14px;
-      font-size: 0.95rem;
-      font-weight: 700;
-      border: none;
-      border-radius: var(--radius-md);
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      color: #ffffff;
-      transition: var(--transition);
-      box-shadow: var(--shadow-sm);
-    }
-
-    .btn-backup-action:hover {
-      transform: translateY(-1px);
-    }
-
-    .btn-backup-action:active {
-      transform: translateY(1px);
-    }
-
-    .btn-backup-import {
-      background-color: var(--primary-color);
-      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
-    }
-    .btn-backup-import:hover {
-      background-color: var(--primary-hover);
-    }
-
-    .btn-backup-export {
-      background-color: var(--success-color);
-      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
-    }
-    .btn-backup-export:hover {
-      background-color: var(--success-hover);
-    }
-
-    .btn-backup-clear {
-      background-color: var(--danger-color);
-      box-shadow: 0 4px 12px rgba(239, 68, 110, 0.2);
-    }
-    .btn-backup-clear:hover {
-      background-color: var(--danger-hover);
-    }
-
-    .btn-backup-install {
-      background-color: var(--warning-color);
-      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
-    }
-    .btn-backup-install:hover {
-      background-color: var(--warning-hover);
-    }
-    .btn-backup-install:disabled {
-      background-color: #cbd5e1;
-      color: #64748b;
-      cursor: not-allowed;
-      box-shadow: none;
-      transform: none;
-    }
-
-    /* Estilos das Abas de Instalação PWA */
-    .install-tabs {
-      display: flex;
-      gap: 8px;
-      margin: 16px 0;
-      border-bottom: 2.5px solid #e2e8f0;
-      padding-bottom: 8px;
-    }
-
-    .install-tab-btn {
-      flex: 1;
-      padding: 10px 6px;
-      font-size: 0.8rem;
-      font-weight: 750;
-      border: none;
-      background: #f1f5f9;
-      color: var(--text-muted);
-      border-radius: var(--radius-sm);
-      cursor: pointer;
-      transition: var(--transition);
-    }
-
-    .install-tab-btn.active {
-      background: var(--primary-color);
-      color: #ffffff;
-    }
-
-    .install-instruction-content {
-      display: none;
-      text-align: left;
-      font-size: 0.88rem;
-      line-height: 1.5;
-    }
-
-    .install-instruction-content.active {
-      display: block;
-    }
-
-    .toast-notificacao {
-      position: fixed;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%) translateY(-100px);
-      background: #0f172a;
-      color: #ffffff;
-      padding: 12px 24px;
-      border-radius: var(--radius-md);
-      box-shadow: var(--shadow-lg);
-      font-weight: 600;
-      font-size: 0.9rem;
-      z-index: 10000;
-      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      text-align: center;
-      max-width: 90%;
-      pointer-events: none;
-    }
-
-    .toast-notificacao.show {
-      transform: translateX(-50%) translateY(0);
-    }
-
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(15, 23, 42, 0.6);
-      backdrop-filter: blur(4px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 10001;
-      padding: 16px;
-    }
-
-    .modal-overlay.show {
-      display: flex;
-    }
-
-    .modal-box {
-      background: var(--card-bg);
-      border-radius: var(--radius-lg);
-      padding: 24px;
-      max-width: 440px;
-      width: 100%;
-      box-shadow: var(--shadow-lg);
-      text-align: center;
-      animation: zoomIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    @keyframes zoomIn {
-      from {
-        opacity: 0;
-        transform: scale(0.95);
-      }
-      to {
-        opacity: 1;
-        transform: scale(1);
-      }
-    }
-
-    .modal-box h4 {
-      font-size: 1.25rem;
-      font-weight: 800;
-      color: #0f172a;
-      margin-bottom: 12px;
-    }
-
-    .modal-box p {
-      font-size: 0.95rem;
-      color: var(--text-muted);
-      margin-bottom: 24px;
-    }
-
-    .modal-actions {
-      display: flex;
-      gap: 12px;
-      justify-content: center;
-    }
-
-    .modal-actions button {
-      padding: 12px 20px;
-      border-radius: var(--radius-md);
-      font-size: 0.9rem;
-      font-weight: 750;
-      cursor: pointer;
-      border: none;
-      transition: var(--transition);
-      flex: 1;
-    }
-
-    .btn-fechar {
-      background-color: #f1f5f9;
-      color: #475569;
-    }
-
-    .btn-fechar:hover {
-      background-color: #e2e8f0;
-    }
-
-    .btn-acao-destrutiva {
-      background-color: var(--danger-color);
-      color: white;
-    }
-
-    .btn-acao-destrutiva:hover {
-      background-color: var(--danger-hover);
-    }
-
-    .menu-dock {
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: calc(100% - 32px);
-      max-width: 460px;
-      height: 68px;
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      background: rgba(15, 23, 42, 0.88);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      border-radius: 20px;
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      z-index: 9999;
-    }
-
-    .menu-dock button {
-      background: none;
-      border: none;
-      color: rgba(255, 255, 255, 0.65);
-      text-decoration: none;
-      text-align: center;
-      font-size: 0.72rem;
-      font-weight: 600;
-      flex: 1;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      gap: 2px;
-      cursor: pointer;
-      transition: var(--transition);
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    .menu-dock button:hover, 
-    .menu-dock button.active {
-      color: #ffffff;
-      outline: none;
-    }
-
-    .menu-dock button.active {
-      font-weight: 800;
-      transform: scale(1.05);
-    }
-
-    .menu-dock-icon {
-      font-size: 1.25rem;
-      margin-bottom: 2px;
-    }
-
-    /* Estilos Adicionais para as Opções de Imagem do Formulário e Estúdio de Edição */
-    .img-action-btn {
-      width: 100%;
-      padding: 14px;
-      font-size: 1rem;
-      font-weight: 700;
-      border-radius: var(--radius-md);
-      cursor: pointer;
-      transition: var(--transition);
-      border: 1.5px solid transparent;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-    }
-    
-    .btn-form-edit-img {
-      background-color: rgba(79, 70, 229, 0.1);
-      color: var(--primary-color);
-      border-color: rgba(79, 70, 229, 0.2);
-    }
-    .btn-form-edit-img:hover {
-      background-color: var(--primary-color);
-      color: white;
-    }
-    
-    .btn-form-change-img {
-      background-color: rgba(16, 185, 129, 0.1);
-      color: var(--success-color);
-      border-color: rgba(16, 185, 129, 0.2);
-    }
-    .btn-form-change-img:hover {
-      background-color: var(--success-color);
-      color: white;
-    }
-
-    .btn-form-delete-img {
-      background-color: rgba(239, 68, 68, 0.1);
-      color: var(--danger-color);
-      border-color: rgba(239, 68, 68, 0.2);
-    }
-    .btn-form-delete-img:hover {
-      background-color: var(--danger-color);
-      color: white;
-    }
-
-    /* OTIMIZAÇÃO RESPONSIVA E ADAPTÁVEL PARA O ESTÚDIO DE EDIÇÃO */
-    .editor-modal-box {
-      padding: 16px !important;
-      max-height: 95vh;
-      display: flex;
-      flex-direction: column;
-      overflow-y: auto;
-    }
-
-    .editor-container {
-      background: #0f172a;
-      border-radius: var(--radius-md);
-      padding: 8px;
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 30vh; /* Altura proporcional ao viewport do celular */
-      min-height: 180px;
-      max-height: 280px;
-      overflow: hidden;
-      border: 1px solid #334155;
-      position: relative;
-    }
-
-    #canvasEditor {
-      max-width: 100%;
-      max-height: 100%;
-      object-fit: contain;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-      border-radius: var(--radius-sm);
-      touch-action: none; /* Bloqueia gestos nativos enquanto desenha no celular */
-    }
-
-    .editor-controls-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 6px;
-      margin-bottom: 12px;
-    }
-
-    .btn-editor-tool {
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
       background: #1e293b;
-      border: 1px solid #334155;
-      color: #f1f5f9;
-      padding: 10px 4px;
-      border-radius: var(--radius-sm);
-      font-size: 0.8rem;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-      transition: var(--transition);
     }
-
-    .btn-editor-tool:hover {
-      background: #334155;
-      border-color: #475569;
-    }
-
-    .btn-editor-tool.active {
-      background: var(--primary-color);
-      border-color: var(--primary-focus);
-      color: white;
-    }
-
-    /* Redimensionador de Grade para Celulares Muito Pequenos */
-    @media (max-width: 420px) {
-      .editor-controls-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-      .btn-editor-tool {
-        font-size: 0.72rem;
-        padding: 8px 2px;
-      }
-      .btn-editor-tool span {
-        font-size: 0.95rem;
-      }
-      .editor-modal-box h4 {
-        font-size: 1.15rem;
-      }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #475569;
+      border-radius: 9999px;
     }
   </style>
 </head>
-<body>
+<body class="bg-[#0b0f19] text-slate-100 min-h-screen flex flex-col font-sans antialiased selection:bg-indigo-500 selection:text-white pb-32">
 
   <!-- Alerta Toast Independente -->
-  <div id="toastGlobal" class="toast-notificacao" role="alert">Mensagem</div>
+  <div id="toastGlobal" class="fixed top-6 left-1/2 -translate-x-1/2 -translate-y-24 bg-slate-900/95 border border-indigo-500/30 text-indigo-400 px-6 py-3 rounded-2xl shadow-glow z-[10000] text-sm font-semibold transition-all duration-300 pointer-events-none text-center max-w-[90%] backdrop-blur-md" role="alert">Mensagem</div>
 
   <!-- Modal Customizado de Confirmação de Exclusão Individual -->
-  <div id="modalExcluirConfirm" class="modal-overlay" aria-hidden="true">
-    <div class="modal-box">
-      <h4 id="modalExcluirTitulo">Confirmar Exclusão</h4>
-      <p id="modalExcluirMensagem">Deseja realmente excluir este registro permanentemente?</p>
-      <div class="modal-actions">
-        <button class="btn-fechar" onclick="fecharModalConfirmacao()">Cancelar</button>
-        <button id="btnConfirmarExclusaoReal" class="btn-acao-destrutiva">Excluir</button>
+  <div id="modalExcluirConfirm" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center z-[10001] p-4 transition-all duration-300" aria-hidden="true">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-sm w-full shadow-glass text-center scale-95 transition-all duration-300">
+      <div class="w-12 h-12 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 text-xl">⚠️</div>
+      <h4 id="modalExcluirTitulo" class="text-lg font-bold text-slate-100 mb-2">Confirmar Exclusão</h4>
+      <p id="modalExcluirMensagem" class="text-sm text-slate-400 mb-6">Deseja realmente excluir este registro permanentemente?</p>
+      <div class="flex gap-3">
+        <button class="flex-1 py-3 bg-slate-800 hover:bg-slate-750 active:scale-95 transition-all rounded-xl text-sm font-semibold text-slate-300" onclick="fecharModalConfirmacao()">Cancelar</button>
+        <button id="btnConfirmarExclusaoReal" class="flex-1 py-3 bg-red-600 hover:bg-red-500 active:scale-95 transition-all rounded-xl text-sm font-semibold text-white">Excluir</button>
       </div>
     </div>
   </div>
 
   <!-- Modal Customizado de Confirmação de Limpar Banco -->
-  <div id="modalLimparConfirm" class="modal-overlay" aria-hidden="true">
-    <div class="modal-box">
-      <h4 style="color: var(--danger-color)">⚠️ Limpar Todos os Dados</h4>
-      <p>Atenção! Esta ação irá excluir permanentemente todos os registros salvos neste aplicativo. Não será possível recuperá-los de outra forma.</p>
-      <div class="modal-actions">
-        <button class="btn-fechar" onclick="fecharModalLimpar()">Cancelar</button>
-        <button onclick="confirmarLimparBanco()" class="btn-acao-destrutiva">Limpar Tudo</button>
+  <div id="modalLimparConfirm" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center z-[10001] p-4 transition-all duration-300" aria-hidden="true">
+    <div class="bg-slate-900 border border-red-500/20 rounded-3xl p-6 max-w-sm w-full shadow-glass text-center">
+      <div class="w-12 h-12 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 text-xl">💀</div>
+      <h4 class="text-lg font-bold text-red-400 mb-2">Limpar Todos os Dados</h4>
+      <p class="text-sm text-slate-400 mb-6">Atenção! Esta ação irá excluir permanentemente todos os registros salvos neste aplicativo. Não será possível recuperá-los.</p>
+      <div class="flex gap-3">
+        <button class="flex-1 py-3 bg-slate-800 hover:bg-slate-700 active:scale-95 transition-all rounded-xl text-sm font-semibold text-slate-300" onclick="fecharModalLimpar()">Cancelar</button>
+        <button onclick="confirmarLimparBanco()" class="flex-1 py-3 bg-red-600 hover:bg-red-500 active:scale-95 transition-all rounded-xl text-sm font-semibold text-white">Limpar Tudo</button>
       </div>
     </div>
   </div>
 
   <!-- Modal Customizado para Zoom de Imagens das "Prontas" -->
-  <div id="modalImagemZoom" class="modal-overlay" aria-hidden="true" onclick="fecharModalImagem()">
-    <div class="modal-box" style="max-width: 480px; padding: 12px; position: relative; display: flex; flex-direction: column;" onclick="event.stopPropagation()">
-      <button type="button" style="position: absolute; top: -12px; right: -12px; background-color: var(--danger-color); color: #ffffff; border: none; border-radius: 50%; width: 32px; height: 32px; font-size: 0.9rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-md); transition: var(--transition); z-index: 10002;" onclick="fecharModalImagem()" title="Fechar">✕</button>
-      <img id="modalImagemZoomElement" src="" alt="Imagem ampliada" style="width: 100%; max-height: 70vh; object-fit: contain; border-radius: var(--radius-md);">
+  <div id="modalImagemZoom" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md hidden items-center justify-center z-[10001] p-4" aria-hidden="true" onclick="fecharModalImagem()">
+    <div class="relative max-w-lg w-full flex flex-col" onclick="event.stopPropagation()">
+      <button type="button" class="absolute -top-4 -right-4 bg-red-600 hover:bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold shadow-md transition-all active:scale-95 z-50" onclick="fecharModalImagem()" title="Fechar">✕</button>
+      <img id="modalImagemZoomElement" src="" alt="Imagem ampliada" class="w-full max-h-[80vh] object-contain rounded-2xl border border-slate-800 shadow-glass">
     </div>
   </div>
 
   <!-- Modal de Opções Rápidas de Imagem (Formulário) -->
-  <div id="modalOpcoesImagemForm" class="modal-overlay" aria-hidden="true" onclick="fecharModalOpcoesImagem()">
-    <div class="modal-box" style="max-width: 360px;" onclick="event.stopPropagation()">
-      <h4>🖼️ Gerenciar Imagem</h4>
-      <p>Escolha o que você deseja fazer com a imagem anexada a este cadastro:</p>
-      <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
-        <button type="button" class="img-action-btn btn-form-edit-img" onclick="abrirEstudioEditor()">
+  <div id="modalOpcoesImagemForm" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center z-[10001] p-4" aria-hidden="true" onclick="fecharModalOpcoesImagem()">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-xs w-full shadow-glass" onclick="event.stopPropagation()">
+      <h4 class="text-lg font-bold text-slate-100 mb-2 text-center">🖼️ Gerenciar Imagem</h4>
+      <p class="text-xs text-slate-400 mb-6 text-center">Escolha o que deseja fazer com a imagem do cadastro:</p>
+      <div class="flex flex-col gap-2 mb-4">
+        <button type="button" class="w-full py-3 bg-indigo-600/10 hover:bg-indigo-600 border border-indigo-500/30 text-indigo-400 hover:text-white rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2" onclick="abrirEstudioEditor()">
           ✏️ EDITAR IMAGEM
         </button>
-        <button type="button" class="img-action-btn btn-form-change-img" onclick="dispararInputUploadOculto()">
+        <button type="button" class="w-full py-3 bg-emerald-600/10 hover:bg-emerald-600 border border-emerald-500/30 text-emerald-400 hover:text-white rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2" onclick="dispararInputUploadOculto()">
           📷 ALTERAR IMAGEM
         </button>
-        <button type="button" class="img-action-btn btn-form-delete-img" onclick="confirmarExclusaoImagemForm()">
+        <button type="button" class="w-full py-3 bg-red-600/10 hover:bg-red-600 border border-red-500/30 text-red-400 hover:text-white rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2" onclick="confirmarExclusaoImagemForm()">
           🗑️ EXCLUIR IMAGEM
         </button>
       </div>
-      <button class="btn-fechar" style="width: 100%; padding: 12px;" onclick="fecharModalOpcoesImagem()">Cancelar</button>
+      <button class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-sm font-semibold" onclick="fecharModalOpcoesImagem()">Cancelar</button>
     </div>
   </div>
 
   <!-- Modal Estúdio de Edição de Imagem (Canvas Nativo Adaptável) -->
-  <div id="modalEstudioEditor" class="modal-overlay" aria-hidden="true">
-    <div class="modal-box editor-modal-box" style="max-width: 440px; width: 95%;">
-      <h4>Estúdio de Edição</h4>
-      <p style="color: var(--text-muted); font-size: 0.82rem; margin-bottom: 12px; text-align: center;">Modifique as propriedades e orientação da sua imagem:</p>
+  <div id="modalEstudioEditor" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md hidden items-center justify-center z-[10001] p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 max-w-md w-full shadow-glass flex flex-col max-h-[95vh] overflow-y-auto custom-scrollbar">
+      <h4 class="text-lg font-bold text-slate-100 mb-1 text-center">Estúdio de Edição</h4>
+      <p class="text-xs text-slate-400 mb-4 text-center">Modifique e ajuste a imagem do seu cadastro:</p>
       
-      <div class="editor-container">
-        <canvas id="canvasEditor" 
+      <div class="bg-slate-950 border border-slate-800 rounded-2xl p-2 mb-4 flex items-center justify-center h-64 overflow-hidden relative">
+        <canvas id="canvasEditor" class="max-w-full max-h-full object-contain rounded shadow-lg touch-none"
                 onmousedown="iniciarDesenho(event)" 
                 onmousemove="desenharLinha(event)" 
                 onmouseup="pararDesenho(event)" 
@@ -1209,262 +138,298 @@
                 ontouchend="pararDesenho(event)"></canvas>
       </div>
 
-      <div id="lapisControlsPanel" style="display: none; margin-bottom: 12px; background: #1e293b; border: 1px solid #334155; padding: 10px; border-radius: var(--radius-sm); align-items: center; justify-content: space-around; gap: 8px;">
-        <div style="display: flex; align-items: center; gap: 6px;">
-          <span style="color: #cbd5e1; font-size: 0.8rem; font-weight: 600;">Cor:</span>
-          <input type="color" id="lapisCorPicker" value="#ef4444" onchange="atualizarConfigLapis()" style="width: 28px; height: 28px; border: none; border-radius: 50%; cursor: pointer; background: transparent;">
+      <div id="lapisControlsPanel" class="hidden mb-4 bg-slate-950 border border-slate-800 p-3 rounded-xl items-center justify-around gap-4">
+        <div class="flex items-center gap-2">
+          <span class="text-xs text-slate-400 font-semibold">Cor:</span>
+          <input type="color" id="lapisCorPicker" value="#ef4444" onchange="atualizarConfigLapis()" class="w-8 h-8 rounded-full border-none cursor-pointer bg-transparent">
         </div>
-        <div style="display: flex; align-items: center; gap: 6px; flex: 1; max-width: 180px;">
-          <span style="color: #cbd5e1; font-size: 0.8rem; font-weight: 600;">Traço:</span>
-          <input type="range" id="lapisEspessuraSlider" min="2" max="20" value="4" oninput="atualizarConfigLapis()" style="flex: 1; height: 6px; background: #475569; border-radius: 3px; outline: none; cursor: pointer;">
-          <span id="lapisEspessuraVal" style="color: #cbd5e1; font-size: 0.8rem; min-width: 20px;">4px</span>
+        <div class="flex items-center gap-2 flex-1 max-w-[200px]">
+          <span class="text-xs text-slate-400 font-semibold">Traço:</span>
+          <input type="range" id="lapisEspessuraSlider" min="2" max="20" value="4" oninput="atualizarConfigLapis()" class="flex-1 h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500">
+          <span id="lapisEspessuraVal" class="text-xs text-slate-400 font-mono w-8 text-right">4px</span>
         </div>
       </div>
 
-      <div class="editor-controls-grid">
-        <button id="btnToolLapis" type="button" class="btn-editor-tool" onclick="editorAlternarLapis()">
-          <span>✏️</span> Lápis
+      <div class="grid grid-cols-3 gap-2 mb-4">
+        <button id="btnToolLapis" type="button" class="btn-editor-tool bg-slate-800 border border-slate-700 hover:bg-slate-700 hover:border-slate-600 text-slate-200 py-2 px-1 rounded-xl text-xs font-semibold flex flex-col items-center justify-center gap-1 transition-all active:scale-95" onclick="editorAlternarLapis()">
+          <span class="text-lg">✏️</span> Lápis
         </button>
-        <button type="button" class="btn-editor-tool" onclick="editorRotacionar(-90)">
-          <span>🔄</span> Rotar Esq.
+        <button type="button" class="btn-editor-tool bg-slate-800 border border-slate-700 hover:bg-slate-700 hover:border-slate-600 text-slate-200 py-2 px-1 rounded-xl text-xs font-semibold flex flex-col items-center justify-center gap-1 transition-all active:scale-95" onclick="editorRotacionar(-90)">
+          <span class="text-lg">🔄</span> Rotar Esq.
         </button>
-        <button type="button" class="btn-editor-tool" onclick="editorRotacionar(90)">
-          <span>🔄</span> Rotar Dir.
+        <button type="button" class="btn-editor-tool bg-slate-800 border border-slate-700 hover:bg-slate-700 hover:border-slate-600 text-slate-200 py-2 px-1 rounded-xl text-xs font-semibold flex flex-col items-center justify-center gap-1 transition-all active:scale-95" onclick="editorRotacionar(90)">
+          <span class="text-lg">🔄</span> Rotar Dir.
         </button>
-        <button id="btnToolGrayscale" type="button" class="btn-editor-tool" onclick="editorAlternarPretoBranco()">
-          <span>🎨</span> P. & B.
+        <button id="btnToolGrayscale" type="button" class="btn-editor-tool bg-slate-800 border border-slate-700 hover:bg-slate-700 hover:border-slate-600 text-slate-200 py-2 px-1 rounded-xl text-xs font-semibold flex flex-col items-center justify-center gap-1 transition-all active:scale-95" onclick="editorAlternarPretoBranco()">
+          <span class="text-lg">🎨</span> P. & B.
         </button>
-        <button type="button" class="btn-editor-tool" onclick="editorInverterHorizontal()">
-          <span>↔️</span> Espelho H.
+        <button type="button" class="btn-editor-tool bg-slate-800 border border-slate-700 hover:bg-slate-700 hover:border-slate-600 text-slate-200 py-2 px-1 rounded-xl text-xs font-semibold flex flex-col items-center justify-center gap-1 transition-all active:scale-95" onclick="editorInverterHorizontal()">
+          <span class="text-lg">↔️</span> Espelho H.
         </button>
-        <button type="button" class="btn-editor-tool" onclick="editorInverterVertical()">
-          <span>↕️</span> Espelho V.
+        <button type="button" class="btn-editor-tool bg-slate-800 border border-slate-700 hover:bg-slate-700 hover:border-slate-600 text-slate-200 py-2 px-1 rounded-xl text-xs font-semibold flex flex-col items-center justify-center gap-1 transition-all active:scale-95" onclick="editorInverterVertical()">
+          <span class="text-lg">↕️</span> Espelho V.
         </button>
-        <button type="button" class="btn-editor-tool" style="grid-column: span 3;" onclick="editorResetarAjustes()">
+        <button type="button" class="col-span-3 bg-slate-950 border border-slate-800 hover:bg-slate-900 text-slate-400 hover:text-slate-200 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1 transition-all active:scale-95" onclick="editorResetarAjustes()">
           <span>🧹</span> Resetar tudo
         </button>
       </div>
 
-      <div class="modal-actions" style="margin-top: 4px;">
-        <button class="btn-fechar" style="padding: 10px 14px; font-size: 0.85rem;" onclick="fecharEstudioEditor()">Descartar</button>
-        <button class="btn-backup-import" style="border-radius: var(--radius-md); padding: 10px 18px; font-size: 0.85rem; font-weight: 750; border: none; cursor: pointer; color: white;" onclick="salvarEdicaoImagemEstudio()">
+      <div class="flex gap-3">
+        <button class="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-sm font-semibold active:scale-95 transition-all" onclick="fecharEstudioEditor()">Descartar</button>
+        <button class="flex-1 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-bold active:scale-95 transition-all shadow-glow" onclick="salvarEdicaoImagemEstudio()">
           Aplicar Ajustes
         </button>
       </div>
     </div>
   </div>
 
-  <!-- Modal de Instruções de Instalação Manual (Aprimorado e Dinâmico por Abas) -->
-  <div id="modalInstalarInstrucoes" class="modal-overlay" aria-hidden="true">
-    <div class="modal-box">
-      <h4>📲 Instalação no Dispositivo</h4>
-      <p style="text-align: left; font-size: 0.9rem; margin-bottom: 12px; line-height: 1.4;">
-        Para segurança do seu aparelho, os navegadores só permitem a instalação nativa sob conexão segura <strong>(HTTPS)</strong> ou rodando localmente.
-      </p>
+  <!-- Modal de Instruções de Instalação Manual -->
+  <div id="modalInstalarInstrucoes" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center z-[10001] p-4" aria-hidden="true">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-glass">
+      <h4 class="text-lg font-bold text-slate-100 mb-2 text-center">📲 Instalação no Dispositivo</h4>
+      <p class="text-xs text-slate-400 mb-4 text-center">Os navegadores requerem uma conexão segura (HTTPS) para habilitar a instalação nativa automática.</p>
 
       <!-- Seleção de Sistema Operacional por Abas -->
-      <div class="install-tabs">
-        <button id="tabBtn-ios" class="install-tab-btn" onclick="mudarTabInstalacao('ios')">🍏 iPhone / iOS</button>
-        <button id="tabBtn-android" class="install-tab-btn" onclick="mudarTabInstalacao('android')">🤖 Android</button>
-        <button id="tabBtn-desktop" class="install-tab-btn" onclick="mudarTabInstalacao('desktop')">💻 Computador</button>
+      <div class="flex gap-1.5 bg-slate-950 p-1 rounded-xl mb-4">
+        <button id="tabBtn-ios" class="flex-1 py-2 text-xs font-bold rounded-lg text-slate-400 hover:text-slate-200 transition-all [&.active]:bg-indigo-600 [&.active]:text-white" onclick="mudarTabInstalacao('ios')">🍏 iOS / iPhone</button>
+        <button id="tabBtn-android" class="flex-1 py-2 text-xs font-bold rounded-lg text-slate-400 hover:text-slate-200 transition-all [&.active]:bg-indigo-600 [&.active]:text-white" onclick="mudarTabInstalacao('android')">🤖 Android</button>
+        <button id="tabBtn-desktop" class="flex-1 py-2 text-xs font-bold rounded-lg text-slate-400 hover:text-slate-200 transition-all [&.active]:bg-indigo-600 [&.active]:text-white" onclick="mudarTabInstalacao('desktop')">💻 Computador</button>
       </div>
       
       <!-- Conteúdo iOS -->
-      <div id="instrucao-ios" class="install-instruction-content">
-        <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 14px; border-radius: var(--radius-md); font-size: 0.85rem; margin-bottom: 20px;">
-          <ol style="margin-left: 16px; display: flex; flex-direction: column; gap: 8px;">
-            <li>Abra este site utilizando o navegador original <strong>Safari</strong>.</li>
-            <li>Toque no botão de <strong>Compartilhar</strong> <span style="font-size: 1.1rem;">📤</span> (ícone com uma seta para cima).</li>
-            <li>Role a lista para baixo e toque em <strong>"Adicionar à Tela de Início"</strong>.</li>
-            <li>Pronto! Ele será aberto em tela cheia como um aplicativo real.</li>
+      <div id="instrucao-ios" class="install-instruction-content hidden">
+        <div class="bg-slate-950 border border-slate-800 p-4 rounded-2xl text-xs text-slate-300 space-y-3 mb-6">
+          <p class="font-medium text-slate-400">Siga os passos utilizando o <span class="text-indigo-400 font-semibold">Safari</span>:</p>
+          <ol class="list-decimal list-inside space-y-2 text-slate-300">
+            <li>Toque no botão de <span class="font-bold text-indigo-400">Compartilhar</span> 📤 na barra inferior do navegador.</li>
+            <li>Role as opções e selecione <span class="font-bold text-indigo-400">"Adicionar à Tela de Início"</span>.</li>
+            <li>Confirme e o app será instalado com visual limpo.</li>
           </ol>
         </div>
       </div>
 
       <!-- Conteúdo Android -->
-      <div id="instrucao-android" class="install-instruction-content">
-        <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 14px; border-radius: var(--radius-md); font-size: 0.85rem; margin-bottom: 20px;">
-          <ol style="margin-left: 16px; display: flex; flex-direction: column; gap: 8px;">
-            <li>No navegador Google Chrome, toque no botão dos <strong>três pontinhos</strong> <span style="font-size: 1.1rem;">⋮</span> no canto superior direito.</li>
-            <li>Selecione a opção <strong>"Instalar aplicativo"</strong> ou <strong>"Adicionar à tela inicial"</strong>.</li>
-            <li>Confirme tocando no botão "Instalar".</li>
+      <div id="instrucao-android" class="install-instruction-content hidden">
+        <div class="bg-slate-950 border border-slate-800 p-4 rounded-2xl text-xs text-slate-300 space-y-3 mb-6">
+          <p class="font-medium text-slate-400">Pelo navegador <span class="text-indigo-400 font-semibold">Google Chrome</span>:</p>
+          <ol class="list-decimal list-inside space-y-2 text-slate-300">
+            <li>Toque nos <span class="font-bold text-indigo-400">três pontinhos ⋮</span> no canto superior direito.</li>
+            <li>Selecione <span class="font-bold text-indigo-400">"Instalar aplicativo"</span> ou <span class="font-bold text-indigo-400">"Adicionar à tela inicial"</span>.</li>
+            <li>Toque em <span class="font-bold text-indigo-400">"Instalar"</span> para confirmar.</li>
           </ol>
         </div>
       </div>
 
       <!-- Conteúdo Desktop -->
-      <div id="instrucao-desktop" class="install-instruction-content">
-        <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 14px; border-radius: var(--radius-md); font-size: 0.85rem; margin-bottom: 20px;">
-          <ol style="margin-left: 16px; display: flex; flex-direction: column; gap: 8px;">
-            <li>Na barra de endereços do Chrome ou Edge, clique no ícone de <strong>Monitor com uma Seta</strong> <span style="font-size: 1.1rem;">🖥️</span>.</li>
-            <li>Se preferir, clique no botão de <strong>três pontos</strong> e selecione <strong>"Instalar Gestor..."</strong>.</li>
-            <li>O aplicativo passará a ser executado em uma janela isolada com alto desempenho.</li>
+      <div id="instrucao-desktop" class="install-instruction-content hidden">
+        <div class="bg-slate-950 border border-slate-800 p-4 rounded-2xl text-xs text-slate-300 space-y-3 mb-6">
+          <p class="font-medium text-slate-400">No seu navegador de preferência:</p>
+          <ol class="list-decimal list-inside space-y-2 text-slate-300">
+            <li>Clique no ícone de <span class="font-bold text-indigo-400">Instalação</span> (ícone de computador com seta) na barra de endereços.</li>
+            <li>Ou abra o menu de configurações do navegador e clique em <span class="font-bold text-indigo-400">"Instalar Gestor..."</span>.</li>
           </ol>
         </div>
       </div>
 
       <div class="modal-actions">
-        <button class="btn-fechar" onclick="fecharModalInstalarInstrucoes()">Entendido</button>
+        <button class="w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-xl text-sm" onclick="fecharModalInstalarInstrucoes()">Entendido</button>
       </div>
     </div>
   </div>
 
-  <div class="container">
+  <!-- Main Container -->
+  <main class="w-full max-w-6xl mx-auto px-4 py-8 flex-1">
 
     <!-- ==========================================
          VISUALIZAÇÃO: HOME
          ========================================== -->
-    <section id="sec-home" class="view-section active">
-      <h1>🍀 Boa Sorte!</h1>
-      <p>Que o seu dia seja repleto de grandes conquistas.</p>
+    <section id="sec-home" class="view-section active gap-6">
+      <div class="text-center py-8">
+        <span class="text-5xl mb-4 block">🍀</span>
+        <h1 class="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-indigo-500 tracking-tight">Boa Sorte!</h1>
+        <p class="text-slate-400 mt-2 text-sm md:text-base">Que o seu dia seja repleto de grandes conquistas.</p>
+      </div>
 
-      <!-- Onde fica a sua mensagem atual na Home -->
-      <div class="mensagem-container">
-          <p id="mensagem-sorte">Carregando sua sorte do dia...</p>
+      <div class="bg-slate-900/60 border border-slate-800/80 rounded-3xl p-6 shadow-glass backdrop-blur-md max-w-xl mx-auto w-full text-center">
+        <span class="text-indigo-400 text-xl font-bold block mb-3">Incentivo do Dia</span>
+        <p id="mensagem-sorte" class="text-slate-300 italic font-medium leading-relaxed">Carregando sua sorte do dia...</p>
       </div>
     </section>
 
     <!-- ==========================================
          VISUALIZAÇÃO: LISTAGEM PRONTAS
          ========================================== -->
-    <section id="sec-prontas" class="view-section">
-      <h2>Cadastros Disponíveis</h2>
+    <section id="sec-prontas" class="view-section gap-6">
+      <div class="text-center">
+        <h2 class="text-2xl font-extrabold text-slate-100 tracking-tight mb-1">Cadastros Disponíveis</h2>
+        <p class="text-xs text-slate-400">Gerencie, pesquise e copie dados rapidamente.</p>
+      </div>
 
       <!-- Painel de Pesquisa Avançado -->
-      <div class="search-box-wrapper">
-        <div class="search-input-group">
-          <span class="search-input-icon">🔍</span>
-          <input type="text" id="inputPesquisa" placeholder="Pesquisar por ID, celular, Pix..." oninput="filtrarCartoesProntas()">
+      <div class="bg-slate-900 border border-slate-800/80 rounded-3xl p-5 shadow-glass backdrop-blur-md flex flex-col md:flex-row gap-3 w-full max-w-3xl mx-auto">
+        <div class="relative flex-1">
+          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">🔍</span>
+          <input type="text" id="inputPesquisa" placeholder="Pesquisar por ID, celular, Pix..." oninput="filtrarCartoesProntas()" class="w-full bg-slate-950 border border-slate-800 rounded-2xl py-3 pl-11 pr-4 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all">
         </div>
-        <div class="filter-row">
-          <select id="filtroAfiliadoCards" onchange="filtrarCartoesProntas()">
+        <div class="w-full md:w-64">
+          <select id="filtroAfiliadoCards" onchange="filtrarCartoesProntas()" class="w-full bg-slate-950 border border-slate-800 rounded-2xl py-3 px-4 text-sm text-slate-300 focus:outline-none focus:border-indigo-500 cursor-pointer appearance-none">
             <option value="">Todos os Afiliados</option>
           </select>
         </div>
       </div>
 
-      <div id="listaCompleta"></div>
+      <!-- Grid de Cards Otimizado -->
+      <div id="listaCompleta" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full mt-2"></div>
     </section>
 
     <!-- ==========================================
          VISUALIZAÇÃO: CADASTRO E EDIÇÃO
          ========================================== -->
-    <section id="sec-cadastro" class="view-section">
-      <h2 id="tituloCadastroSecao">Novo Cadastro</h2>
+    <section id="sec-cadastro" class="view-section gap-6">
+      <div class="text-center">
+        <h2 id="tituloCadastroSecao" class="text-2xl font-extrabold text-slate-100 tracking-tight mb-1">Novo Cadastro</h2>
+        <p class="text-xs text-slate-400">Preencha os dados e anexe uma imagem opcional.</p>
+      </div>
 
-      <form id="formCadastro">
-        <input type="tel" id="celular" inputmode="numeric" placeholder="Celular" required autocomplete="tel">
-        <input type="text" id="id" inputmode="numeric" pattern="[0-9]*" placeholder="ID" required>
-        <input type="text" id="pix" placeholder="Chave Pix (Opcional)">
-        <input type="url" id="link" placeholder="Endereço Link" required autocomplete="url">
-        
-        <!-- Drop Box de Celulares Cadastrados para Selecionar Afiliado -->
-        <select id="afiliado">
-          <option value="">Selecione um Afiliado (Celular)</option>
-        </select>
-        
-        <!-- Visualização Dinâmica do Preview no Formulário com Clique Gerenciável -->
-        <div id="previewWrapper" class="form-image-preview-wrapper" onclick="abrirModalOpcoesImagem()">
-          <img id="imagePreviewElement" src="" alt="Pré-visualização do arquivo">
-          <div class="form-image-preview-overlay">
-            <span>⚙️</span>
-            <span>Clique para gerenciar</span>
+      <div class="max-w-xl mx-auto w-full">
+        <form id="formCadastro" class="bg-slate-900 border border-slate-800/80 p-6 rounded-3xl shadow-glass backdrop-blur-md flex flex-col gap-4">
+          <div class="space-y-3">
+            <input type="tel" id="celular" inputmode="numeric" placeholder="Celular" required autocomplete="tel" class="w-full bg-slate-950 border border-slate-800 rounded-2xl py-3 px-4 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all">
+            
+            <input type="text" id="id" inputmode="numeric" pattern="[0-9]*" placeholder="ID" required class="w-full bg-slate-950 border border-slate-800 rounded-2xl py-3 px-4 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all">
+            
+            <input type="text" id="pix" placeholder="Chave Pix (Opcional)" class="w-full bg-slate-950 border border-slate-800 rounded-2xl py-3 px-4 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all">
+            
+            <input type="url" id="link" placeholder="Endereço Link" required autocomplete="url" class="w-full bg-slate-950 border border-slate-800 rounded-2xl py-3 px-4 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all">
+            
+            <select id="afiliado" class="w-full bg-slate-950 border border-slate-800 rounded-2xl py-3 px-4 text-sm text-slate-300 focus:outline-none focus:border-indigo-500 cursor-pointer">
+              <option value="">Selecione um Afiliado (Celular)</option>
+            </select>
           </div>
-          <button type="button" class="btn-remove-preview" onclick="event.stopPropagation(); removerImagemPreview()" title="Remover imagem">✕</button>
-        </div>
+          
+          <!-- Preview de Imagem Otimizado -->
+          <div id="previewWrapper" class="hidden relative self-center w-36 h-36 rounded-2xl overflow-hidden border-2 border-dashed border-indigo-500 shadow-md group cursor-pointer my-2" onclick="abrirModalOpcoesImagem()">
+            <img id="imagePreviewElement" src="" alt="Pré-visualização do arquivo" class="w-full h-full object-cover">
+            <div class="absolute inset-0 bg-slate-950/75 flex flex-col items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all text-[10px] font-bold text-center p-2">
+              <span class="text-base mb-1">⚙️</span>
+              <span>Clique para gerenciar</span>
+            </div>
+            <button type="button" class="absolute top-2 right-2 bg-red-600 hover:bg-red-500 text-white rounded-full w-6 h-6 text-xs flex items-center justify-center font-bold active:scale-90 transition-all z-10" onclick="event.stopPropagation(); removerImagemPreview()" title="Remover imagem">✕</button>
+          </div>
 
-        <div class="file-input-wrapper">
-          <input type="file" id="imagem" accept="image/*" onchange="manipularSelecaoImagem(event)">
-        </div>
-        
-        <button type="submit" id="btnSalvar">Salvar Cadastro</button>
-        <button type="button" id="btnCancelarEdicao" class="btn-cancelar-edicao" style="display: none;" onclick="cancelarFluxoEdicao()">
-          Cancelar Edição
-        </button>
-      </form>
+          <!-- Input File Customizado -->
+          <div class="relative w-full">
+            <label for="imagem" class="flex flex-col items-center justify-center w-full py-4 bg-slate-950 hover:bg-slate-950/80 border-2 border-dashed border-slate-800 hover:border-indigo-500/50 rounded-2xl cursor-pointer transition-all group">
+              <span class="text-2xl mb-1 group-hover:scale-110 transition-transform">📷</span>
+              <span class="text-xs text-slate-400">Anexar ou capturar imagem</span>
+              <input type="file" id="imagem" accept="image/*" onchange="manipularSelecaoImagem(event)" class="hidden">
+            </label>
+          </div>
+          
+          <button type="submit" id="btnSalvar" class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold rounded-2xl transition-all shadow-glow text-sm">Salvar Cadastro</button>
+          <button type="button" id="btnCancelarEdicao" class="hidden w-full py-2.5 bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 font-semibold rounded-2xl transition-all text-sm mt-1" onclick="cancelarFluxoEdicao()">
+            Cancelar Edição
+          </button>
+        </form>
 
-      <hr>
+        <hr class="border-slate-800/80 my-8">
 
-      <h3>Gestão de IDs Cadastrados</h3>
-      <div id="listaIds"></div>
+        <h3 class="text-lg font-bold text-slate-200 mb-4">Gestão de IDs Cadastrados</h3>
+        <div id="listaIds" class="flex flex-col gap-3"></div>
+      </div>
     </section>
 
     <!-- ==========================================
          VISUALIZAÇÃO: BACKUP DE DADOS
          ========================================== -->
-    <section id="sec-backup" class="view-section">
-      <h2>Backup & Instalação</h2>
-      <p>Importe, exporte ou remova os seus dados e instale o aplicativo na tela inicial do seu aparelho.</p>
+    <section id="sec-backup" class="view-section gap-6">
+      <div class="text-center">
+        <h2 class="text-2xl font-extrabold text-slate-100 tracking-tight mb-1">Backup & Instalação</h2>
+        <p class="text-xs text-slate-400">Importe, exporte ou limpe sua base de dados local.</p>
+      </div>
 
-      <div class="backup-actions-container">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto w-full">
         
         <!-- Painel Instalação PWA -->
-        <div class="backup-card">
-          <div class="backup-header">
-            <span style="font-size: 1.5rem;">📲</span>
-            <div class="backup-title">Instalar Aplicativo</div>
+        <div class="bg-slate-900 border border-slate-800/80 p-6 rounded-3xl shadow-glass flex flex-col gap-4">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl">📲</span>
+            <div class="text-left">
+              <h3 class="font-bold text-slate-200">Instalar Aplicativo</h3>
+              <p class="text-xs text-slate-400 leading-relaxed">Adicione o atalho nativo na tela inicial do seu dispositivo.</p>
+            </div>
           </div>
-          <div class="backup-desc">Adicione este aplicativo diretamente à tela inicial do seu celular ou computador para acessá-lo de forma rápida e nativa.</div>
-          <button id="btnInstalarPWA" onclick="fluxoInstalarApp()" class="btn-backup-action btn-backup-install">
+          <button id="btnInstalarPWA" onclick="fluxoInstalarApp()" class="w-full py-3.5 bg-amber-600 hover:bg-amber-500 active:scale-95 text-white font-bold rounded-2xl transition-all shadow-glow text-sm mt-auto">
             Instalar na Tela Inicial
           </button>
         </div>
 
         <!-- Painel de Quota de Memória Local -->
-        <div class="backup-card">
-          <div class="backup-header">
-            <span style="font-size: 1.5rem;">💾</span>
-            <div class="backup-title">Armazenamento Local</div>
-          </div>
-          <div class="backup-desc">O limite padrão seguro de persistência no seu navegador é de cerca de 5 MB.</div>
-          
-          <div class="storage-indicator-wrapper">
-            <div class="storage-text-row">
-              <span>Uso do Sistema:</span>
-              <span id="storageSizeLabel">0.00 KB / 5.00 MB</span>
+        <div class="bg-slate-900 border border-slate-800/80 p-6 rounded-3xl shadow-glass flex flex-col gap-4">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl">💾</span>
+            <div class="text-left">
+              <h3 class="font-bold text-slate-200">Armazenamento Local</h3>
+              <p class="text-xs text-slate-400 leading-relaxed">O limite recomendado de espaço seguro no navegador é de 5 MB.</p>
             </div>
-            <div class="storage-bar-bg">
-              <div id="storageBarFill" class="storage-bar-fill"></div>
+          </div>
+          
+          <div class="bg-slate-950 border border-slate-850 p-4 rounded-2xl mt-2">
+            <div class="flex justify-between text-xs font-bold text-slate-300 mb-2">
+              <span>Uso do Sistema:</span>
+              <span id="storageSizeLabel" class="font-mono">0.00 KB / 5.00 MB</span>
+            </div>
+            <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+              <div id="storageBarFill" class="h-full w-0 bg-indigo-500 rounded-full transition-all duration-500"></div>
             </div>
           </div>
         </div>
         
         <!-- Painel Importar -->
-        <div class="backup-card">
-          <div class="backup-header">
-            <span style="font-size: 1.5rem;">📥</span>
-            <div class="backup-title">Importar Backup</div>
+        <div class="bg-slate-900 border border-slate-800/80 p-6 rounded-3xl shadow-glass flex flex-col gap-4">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl">📥</span>
+            <div class="text-left">
+              <h3 class="font-bold text-slate-200">Importar Backup</h3>
+              <p class="text-xs text-slate-400 leading-relaxed">Selecione um arquivo .json gerado previamente para carregar.</p>
+            </div>
           </div>
-          <div class="backup-desc">Selecione o arquivo de dados salvos anteriormente (formato .json) para restaurar sua lista.</div>
           
-          <div class="file-input-wrapper">
-            <input type="file" id="importArquivoInput" accept=".json">
+          <div class="relative w-full mt-2">
+            <label for="importArquivoInput" class="flex items-center justify-center gap-2 py-3 bg-slate-950 hover:bg-slate-950/80 border-2 border-dashed border-slate-800 hover:border-indigo-500/50 rounded-2xl cursor-pointer transition-all text-xs text-slate-400 font-medium">
+              📁 Selecionar Arquivo Backup
+              <input type="file" id="importArquivoInput" accept=".json" class="hidden">
+            </label>
           </div>
-          <button onclick="fluxoImportarArquivo()" class="btn-backup-action btn-backup-import">
+          <button onclick="fluxoImportarArquivo()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold rounded-2xl transition-all text-sm">
             Confirmar e Carregar
           </button>
         </div>
 
         <!-- Painel Exportar -->
-        <div class="backup-card">
-          <div class="backup-header">
-            <span style="font-size: 1.5rem;">📤</span>
-            <div class="backup-title">Exportar Cadastros</div>
+        <div class="bg-slate-900 border border-slate-800/80 p-6 rounded-3xl shadow-glass flex flex-col gap-4">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl">📤</span>
+            <div class="text-left">
+              <h3 class="font-bold text-slate-200">Exportar Cadastros</h3>
+              <p class="text-xs text-slate-400 leading-relaxed">Baixe um arquivo seguro com todos os registros ativos.</p>
+            </div>
           </div>
-          <div class="backup-desc">Gere e baixe um arquivo estruturado com todos os dados cadastrados no aplicativo.</div>
-          <button onclick="fluxoExportarArquivo()" class="btn-backup-action btn-backup-export">
+          <button onclick="fluxoExportarArquivo()" class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold rounded-2xl transition-all text-sm mt-auto">
             Salvar Arquivo de Backup
           </button>
         </div>
 
         <!-- Painel Limpar -->
-        <div class="backup-card">
-          <div class="backup-header">
-            <span style="font-size: 1.5rem; color: var(--danger-color);">⚠️</span>
-            <div class="backup-title" style="color: var(--danger-color);">Limpar Banco</div>
+        <div class="bg-slate-900 border border-red-950/30 p-6 rounded-3xl shadow-glass flex flex-col gap-4 md:col-span-2">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl text-red-500">⚠️</span>
+            <div class="text-left">
+              <h3 class="font-bold text-red-400">Limpar Banco</h3>
+              <p class="text-xs text-slate-400 leading-relaxed">Apague de forma irreversível todos os cadastros registrados localmente.</p>
+            </div>
           </div>
-          <div class="backup-desc">Apague completamente e de forma irreversível todos os cadastros registrados localmente.</div>
-          <button onclick="pedirConfirmacaoLimpar()" class="btn-backup-action btn-backup-clear">
+          <button onclick="pedirConfirmacaoLimpar()" class="w-full py-3.5 bg-red-600 hover:bg-red-500 active:scale-95 text-white font-bold rounded-2xl transition-all text-sm">
             Apagar Tudo Permanentemente
           </button>
         </div>
@@ -1472,23 +437,27 @@
       </div>
     </section>
 
-  </div>
+  </main>
 
   <!-- ==========================================
-       MENU DE NAVEGAÇÃO INTERATIVO
+       MENU DE NAVEGAÇÃO INTERATIVO (Glassmorphic Dock)
        ========================================== -->
-  <nav class="menu-dock">
-    <button onclick="navegarAbas('home')" id="btnNav-home" class="active">
-      <span class="menu-dock-icon">🏠</span>Home
+  <nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-lg h-20 flex justify-around items-center bg-slate-950/80 backdrop-blur-lg rounded-3xl shadow-glass border border-slate-800/80 z-[9999] px-2">
+    <button onclick="navegarAbas('home')" id="btnNav-home" class="group flex flex-col justify-center items-center flex-1 h-full text-slate-400 active:scale-90 [&.active]:text-white transition-all">
+      <span class="text-xl mb-1 group-hover:scale-110 transition-transform">🏠</span>
+      <span class="text-[10px] font-bold tracking-wider uppercase opacity-80 group-[.active]:opacity-100">Home</span>
     </button>
-    <button onclick="navegarAbas('prontas')" id="btnNav-prontas">
-      <span class="menu-dock-icon">📄</span>Prontas
+    <button onclick="navegarAbas('prontas')" id="btnNav-prontas" class="group flex flex-col justify-center items-center flex-1 h-full text-slate-400 active:scale-90 [&.active]:text-white transition-all">
+      <span class="text-xl mb-1 group-hover:scale-110 transition-transform">📄</span>
+      <span class="text-[10px] font-bold tracking-wider uppercase opacity-80 group-[.active]:opacity-100">Prontas</span>
     </button>
-    <button onclick="navegarAbas('cadastro')" id="btnNav-cadastro">
-      <span class="menu-dock-icon">➕</span>Cadastro
+    <button onclick="navegarAbas('cadastro')" id="btnNav-cadastro" class="group flex flex-col justify-center items-center flex-1 h-full text-slate-400 active:scale-90 [&.active]:text-white transition-all">
+      <span class="text-xl mb-1 group-hover:scale-110 transition-transform">➕</span>
+      <span class="text-[10px] font-bold tracking-wider uppercase opacity-80 group-[.active]:opacity-100">Cadastro</span>
     </button>
-    <button onclick="navegarAbas('backup')" id="btnNav-backup">
-      <span class="menu-dock-icon">💾</span>Backup
+    <button onclick="navegarAbas('backup')" id="btnNav-backup" class="group flex flex-col justify-center items-center flex-1 h-full text-slate-400 active:scale-90 [&.active]:text-white transition-all">
+      <span class="text-xl mb-1 group-hover:scale-110 transition-transform">💾</span>
+      <span class="text-[10px] font-bold tracking-wider uppercase opacity-80 group-[.active]:opacity-100">Backup</span>
     </button>
   </nav>
 
@@ -1496,70 +465,86 @@
        LÓGICA JAVASCRIPT OTIMIZADA
        ========================================== -->
   <script>
-
-    // 1. Lista de mensagens de sorte (você pode adicionar quantas quiser)
-    const mensagensDeSorte = [
-        "Que a sorte acompanhe cada uma de suas decisões hoje!",
-        "Grandes conquistas começam com pequenos passos. Boa sorte!",
-        "O sucesso é a soma de pequenos esforços repetidos dia após dia.",
-        "Que o dia de hoje traga novas oportunidades e muita prosperidade!",
-        "Acredite no seu potencial e o universo conspirará a seu favor.",
-        "Foco, determinação e um pouquinho de sorte para o seu dia!",
-        "Que hoje tudo flua de forma leve, produtiva e muito lucrativa!"
+    // Configurações Globais e Mensagens de Sorte
+    const MENSAGENS_DE_SORTE = [
+      "Que a sorte acompanhe cada uma de suas decisões hoje!",
+      "Grandes conquistas começam com pequenos passos. Boa sorte!",
+      "O sucesso é a soma de pequenos esforços repetidos dia após dia.",
+      "Que o dia de hoje traga novas oportunidades e muita prosperidade!",
+      "Acredite no seu potencial e o universo conspirará a seu favor.",
+      "Foco, determinação e um pouquinho de sorte para o seu dia!",
+      "Que hoje tudo flua de forma leve, produtiva e muito lucrativa!"
     ];
 
-    // 2. Função para escolher uma mensagem aleatória
-    function mudarMensagemSorte() {
-        // Gera um índice aleatório baseado no tamanho do array de mensagens
-        const indiceAleatorio = Math.floor(Math.random() * mensagensDeSorte.length);
-        
-        // Seleciona o elemento HTML pelo ID e altera o seu texto
-        const elementoMensagem = document.getElementById("mensagem-sorte");
-        if (elementoMensagem) {
-            elementoMensagem.textContent = mensagensDeSorte[indiceAleatorio];
-        }
-    }
+    // Seletor utilitário
+    const $ = id => document.getElementById(id);
 
-    // 3. Executa a função assim que a página terminar de carregar
-    document.addEventListener("DOMContentLoaded", mudarMensagemSorte);
+    // Cacheamento de Elementos do DOM
+    const DOM = {
+      toast: $("toastGlobal"),
+      modalExcluir: $("modalExcluirConfirm"),
+      modalLimpar: $("modalLimparConfirm"),
+      modalInstalar: $("modalInstalarInstrucoes"),
+      modalImagemZoom: $("modalImagemZoom"),
+      modalImagemZoomElement: $("modalImagemZoomElement"),
+      modalOpcoesImagem: $("modalOpcoesImagemForm"),
+      modalEstudio: $("modalEstudioEditor"),
+      canvasEditor: $("canvasEditor"),
+      formCadastro: $("formCadastro"),
+      inputCelular: $("celular"),
+      inputId: $("id"),
+      inputPix: $("pix"),
+      inputLink: $("link"),
+      selectAfiliado: $("afiliado"),
+      previewWrapper: $("previewWrapper"),
+      imagePreviewElement: $("imagePreviewElement"),
+      btnSalvar: $("btnSalvar"),
+      btnCancelarEdicao: $("btnCancelarEdicao"),
+      tituloCadastroSecao: $("tituloCadastroSecao"),
+      listaIds: $("listaIds"),
+      listaCompleta: $("listaCompleta"),
+      storageSizeLabel: $("storageSizeLabel"),
+      storageBarFill: $("storageBarFill"),
+      importArquivoInput: $("importArquivoInput"),
+      btnInstalarPWA: $("btnInstalarPWA"),
+      inputPesquisa: $("inputPesquisa"),
+      filtroAfiliadoCards: $("filtroAfiliadoCards"),
+      btnToolLapis: $("btnToolLapis"),
+      btnToolGrayscale: $("btnToolGrayscale"),
+      lapisControlsPanel: $("lapisControlsPanel"),
+      lapisCorPicker: $("lapisCorPicker"),
+      lapisEspessuraSlider: $("lapisEspessuraSlider"),
+      lapisEspessuraVal: $("lapisEspessuraVal")
+    };
 
-    // Recuperação de dados com tratamento contra falhas
-    let dados = [];
-    try {
-      dados = JSON.parse(localStorage.getItem("cadastros")) || [];
-    } catch (err) {
-      console.error("Falha ao recuperar base de dados:", err);
-      dados = [];
-    }
+    // Estado Centralizado
+    const STATE = {
+      dados: [],
+      editandoIdx: -1,
+      exclusaoAlvoIdx: null,
+      deferredPrompt: null,
+      imagemBase64FormTemp: "",
+      
+      // Editor Canvas
+      editor: {
+        imgObj: null,
+        rotacao: 0,
+        invertidoH: false,
+        invertidoV: false,
+        pretoBranco: false,
+        desenhando: false,
+        modoLapis: false,
+        ultimoX: 0,
+        ultimoY: 0,
+        lapisCor: "#ef4444",
+        lapisLargura: 4
+      }
+    };
 
-    let editandoIdx = -1;
-    let exclusaoAlvoIdx = null;
-    let deferredPrompt = null; // Variável para PWA
-    let imagemBase64FormTemp = ""; // Imagem ativa do formulário
-
-    // Variáveis de estado exclusivas do Editor de Imagem (Canvas)
-    let editorImgObj = null; 
-    let editorRotacao = 0; // 0, 90, 180, 270...
-    let editorInvertidoH = false;
-    let editorInvertidoV = false;
-    let editorPretoBranco = false;
-
-    // Componentes de Interface
-    const toast = document.getElementById("toastGlobal");
-    const modalExcluir = document.getElementById("modalExcluirConfirm");
-    const modalLimpar = document.getElementById("modalLimparConfirm");
-    const modalInstalar = document.getElementById("modalInstalarInstrucoes");
-    const btnConfirmarExclusaoReal = document.getElementById("btnConfirmarExclusaoReal");
-    const formCadastro = document.getElementById("formCadastro");
-    const inputCelular = document.getElementById("celular");
-    const inputId = document.getElementById("id");
-
-    const modalOpcoesImagem = document.getElementById("modalOpcoesImagemForm");
-    const modalEstudio = document.getElementById("modalEstudioEditor");
-    const canvasEditor = document.getElementById("canvasEditor");
-
-    // Ciclo de Vida Inicial
+    // Inicialização
     window.addEventListener('DOMContentLoaded', () => {
+      carregarBancoLocal();
+      mudarMensagemSorte();
       configurarTratamentoInputs();
       atualizarListagens();
       verificarSinalizadorPWA();
@@ -1567,24 +552,50 @@
       calcularConsumoEspaco();
     });
 
-    // Monitoramento do evento de instalação do PWA
+    // Sanitização de entradas para evitar falhas de injeção HTML/Script
+    function escapeHTML(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function carregarBancoLocal() {
+      try {
+        STATE.dados = JSON.parse(localStorage.getItem("cadastros")) || [];
+      } catch (err) {
+        console.error("Falha ao recuperar base de dados:", err);
+        STATE.dados = [];
+      }
+    }
+
+    function mudarMensagemSorte() {
+      const indiceAleatorio = Math.floor(Math.random() * MENSAGENS_DE_SORTE.length);
+      const elem = $("mensagem-sorte");
+      if (elem) elem.textContent = MENSAGENS_DE_SORTE[indiceAleatorio];
+    }
+
+    // PWA & Eventos de Instalação
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
-      deferredPrompt = e;
+      STATE.deferredPrompt = e;
       
-      const btnInstalar = document.getElementById("btnInstalarPWA");
-      if (btnInstalar) {
+      if (DOM.btnInstalarPWA) {
         if (!isAppInstalado()) {
-          btnInstalar.innerHTML = "⚡ Instalar Agora";
-          btnInstalar.style.backgroundColor = "var(--success-color)";
-          btnInstalar.disabled = false;
+          DOM.btnInstalarPWA.innerHTML = "⚡ Instalar Agora";
+          DOM.btnInstalarPWA.classList.remove('bg-amber-600', 'hover:bg-amber-500');
+          DOM.btnInstalarPWA.classList.add('bg-emerald-600', 'hover:bg-emerald-500');
+          DOM.btnInstalarPWA.disabled = false;
         }
       }
     });
 
-    window.addEventListener('appinstalled', (evt) => {
-      emitirNotificacao("🎉 Aplicativo instalado com sucesso na sua tela inicial!");
-      deferredPrompt = null;
+    window.addEventListener('appinstalled', () => {
+      emitirNotificacao("🎉 Aplicativo instalado com sucesso!");
+      STATE.deferredPrompt = null;
       verificarSinalizadorPWA();
     });
 
@@ -1593,16 +604,9 @@
     }
 
     function verificarSinalizadorPWA() {
-      const isSecure = window.location.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-      const isIFrame = window.self !== window.top;
-      
-      console.log("[PWA Status]: Contexto Seguro:", isSecure, " | Dentro de Iframe:", isIFrame, " | Já Instalado:", isAppInstalado());
-
-      const btnInstalar = document.getElementById("btnInstalarPWA");
-      const cardInstalacao = btnInstalar ? btnInstalar.closest('.backup-card') : null;
-
+      const cardInstalacao = DOM.btnInstalarPWA ? DOM.btnInstalarPWA.closest('.bg-slate-900') : null;
       if (isAppInstalado() && cardInstalacao) {
-        cardInstalacao.style.display = "none"; // Oculta visualmente
+        cardInstalacao.style.display = "none";
       }
     }
 
@@ -1619,13 +623,13 @@
 
     function mudarTabInstalacao(plataforma) {
       document.querySelectorAll('.install-tab-btn').forEach(btn => btn.classList.remove('active'));
-      document.querySelectorAll('.install-instruction-content').forEach(content => content.classList.remove('active'));
+      document.querySelectorAll('.install-instruction-content').forEach(content => content.classList.add('hidden'));
 
-      const btnAtivo = document.getElementById(`tabBtn-${plataforma}`);
-      const conteudoAtivo = document.getElementById(`instrucao-${plataforma}`);
+      const btnAtivo = $(`tabBtn-${plataforma}`);
+      const conteudoAtivo = $(`instrucao-${plataforma}`);
 
       if (btnAtivo) btnAtivo.classList.add('active');
-      if (conteudoAtivo) conteudoAtivo.classList.add('active');
+      if (conteudoAtivo) conteudoAtivo.classList.remove('hidden');
     }
 
     function fluxoInstalarApp() {
@@ -1634,15 +638,15 @@
         return;
       }
 
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then((resultado) => {
+      if (STATE.deferredPrompt) {
+        STATE.deferredPrompt.prompt();
+        STATE.deferredPrompt.userChoice.then((resultado) => {
           if (resultado.outcome === 'accepted') {
             emitirNotificacao("Obrigado por instalar o aplicativo!");
           } else {
             emitirNotificacao("Instalação cancelada.");
           }
-          deferredPrompt = null;
+          STATE.deferredPrompt = null;
         });
       } else {
         abrirModalInstalarInstrucoes();
@@ -1650,299 +654,277 @@
     }
 
     function abrirModalInstalarInstrucoes() {
-      modalInstalar.classList.add("show");
-      modalInstalar.setAttribute("aria-hidden", "false");
+      DOM.modalInstalar.classList.remove("hidden");
+      DOM.modalInstalar.classList.add("flex");
+      DOM.modalInstalar.setAttribute("aria-hidden", "false");
     }
 
     function fecharModalInstalarInstrucoes() {
-      modalInstalar.classList.remove("show");
-      modalInstalar.setAttribute("aria-hidden", "true");
+      DOM.modalInstalar.classList.add("hidden");
+      DOM.modalInstalar.classList.remove("flex");
+      DOM.modalInstalar.setAttribute("aria-hidden", "true");
     }
 
     function emitirNotificacao(texto, tempo = 2500) {
-      toast.innerText = texto;
-      toast.classList.add("show");
+      DOM.toast.innerText = texto;
+      DOM.toast.classList.remove("-translate-y-24");
+      DOM.toast.classList.add("translate-y-0");
       
       if (window.toastTimeout) clearTimeout(window.toastTimeout);
       
       window.toastTimeout = setTimeout(() => {
-        toast.classList.remove("show");
+        DOM.toast.classList.add("-translate-y-24");
+        DOM.toast.classList.remove("translate-y-0");
       }, tempo);
     }
 
     function pedirConfirmacaoExcluir(idx) {
-      exclusaoAlvoIdx = idx;
-      const idRegistro = dados[idx] ? dados[idx].id : '';
-      
-      const elemMsg = document.getElementById("modalExcluirMensagem");
+      STATE.exclusaoAlvoIdx = idx;
+      const idRegistro = STATE.dados[idx] ? STATE.dados[idx].id : '';
+      const elemMsg = $("modalExcluirMensagem");
       if (elemMsg) {
-        elemMsg.innerText = `Deseja realmente excluir o registro de ID ${idRegistro} permanentemente?`;
+        elemMsg.innerText = `Deseja realmente excluir o registro de ID ${escapeHTML(idRegistro)} permanentemente?`;
       }
       
-      modalExcluir.classList.add("show");
-      modalExcluir.setAttribute("aria-hidden", "false");
+      DOM.modalExcluir.classList.remove("hidden");
+      DOM.modalExcluir.classList.add("flex");
+      DOM.modalExcluir.setAttribute("aria-hidden", "false");
     }
 
     function fecharModalConfirmacao() {
-      modalExcluir.classList.remove("show");
-      modalExcluir.setAttribute("aria-hidden", "true");
-      exclusaoAlvoIdx = null;
+      DOM.modalExcluir.classList.add("hidden");
+      DOM.modalExcluir.classList.remove("flex");
+      DOM.modalExcluir.setAttribute("aria-hidden", "true");
+      STATE.exclusaoAlvoIdx = null;
     }
 
-    btnConfirmarExclusaoReal.onclick = function() {
-      if (exclusaoAlvoIdx !== null && dados[exclusaoAlvoIdx]) {
-        const idEliminado = dados[exclusaoAlvoIdx].id;
-        dados.splice(exclusaoAlvoIdx, 1);
+    $("btnConfirmarExclusaoReal").onclick = function() {
+      const idx = STATE.exclusaoAlvoIdx;
+      if (idx !== null && STATE.dados[idx]) {
+        const idEliminado = STATE.dados[idx].id;
+        STATE.dados.splice(idx, 1);
         guardarLocalStore();
         atualizarListagens();
         fecharModalConfirmacao();
         emitirNotificacao(`ID ${idEliminado} foi removido.`);
         
-        if (editandoIdx === exclusaoAlvoIdx) {
+        if (STATE.editandoIdx === idx) {
           cancelarFluxoEdicao();
         }
       }
     };
 
     function pedirConfirmacaoLimpar() {
-      if (dados.length === 0) {
+      if (STATE.dados.length === 0) {
         emitirNotificacao("Não existem dados cadastrados para limpar.");
         return;
       }
-      modalLimpar.classList.add("show");
-      modalLimpar.setAttribute("aria-hidden", "false");
+      DOM.modalLimpar.classList.remove("hidden");
+      DOM.modalLimpar.classList.add("flex");
+      DOM.modalLimpar.setAttribute("aria-hidden", "false");
     }
 
     function fecharModalLimpar() {
-      modalLimpar.classList.remove("show");
-      modalLimpar.setAttribute("aria-hidden", "true");
+      DOM.modalLimpar.classList.add("hidden");
+      DOM.modalLimpar.classList.remove("flex");
+      DOM.modalLimpar.setAttribute("aria-hidden", "true");
     }
 
     function confirmarLimparBanco() {
-      dados = [];
+      STATE.dados = [];
       guardarLocalStore();
       atualizarListagens();
       fecharModalLimpar();
       cancelarFluxoEdicao();
-      emitirNotificacao("Todos os dados foram limpos do dispositivo!");
+      emitirNotificacao("Todos os dados foram limpos!");
       navegarAbas('home');
     }
 
     window.abrirModalImagem = function(idx) {
-      if (dados[idx] && dados[idx].imagem) {
-        const modal = document.getElementById("modalImagemZoom");
-        const imgZoom = document.getElementById("modalImagemZoomElement");
-        if (modal && imgZoom) {
-          imgZoom.src = dados[idx].imagem;
-          modal.classList.add("show");
-          modal.setAttribute("aria-hidden", "false");
-        }
+      if (STATE.dados[idx] && STATE.dados[idx].imagem) {
+        DOM.modalImagemZoomElement.src = STATE.dados[idx].imagem;
+        DOM.modalImagemZoom.classList.remove("hidden");
+        DOM.modalImagemZoom.classList.add("flex");
+        DOM.modalImagemZoom.setAttribute("aria-hidden", "false");
       }
     };
 
     window.fecharModalImagem = function() {
-      const modal = document.getElementById("modalImagemZoom");
-      const imgZoom = document.getElementById("modalImagemZoomElement");
-      if (modal) {
-        modal.classList.remove("show");
-        modal.setAttribute("aria-hidden", "true");
-      }
-      if (imgZoom) {
-        setTimeout(() => { imgZoom.src = ""; }, 200);
-      }
+      DOM.modalImagemZoom.classList.add("hidden");
+      DOM.modalImagemZoom.classList.remove("flex");
+      DOM.modalImagemZoom.setAttribute("aria-hidden", "true");
+      setTimeout(() => { DOM.modalImagemZoomElement.src = ""; }, 200);
     };
 
-    // Controle do Modal de Opções Rápidas de Imagem do Formulário
     window.abrirModalOpcoesImagem = function() {
-      if (!imagemBase64FormTemp) return;
-      modalOpcoesImagem.classList.add("show");
-      modalOpcoesImagem.setAttribute("aria-hidden", "false");
+      if (!STATE.imagemBase64FormTemp) return;
+      DOM.modalOpcoesImagem.classList.remove("hidden");
+      DOM.modalOpcoesImagem.classList.add("flex");
+      DOM.modalOpcoesImagem.setAttribute("aria-hidden", "false");
     };
 
     window.fecharModalOpcoesImagem = function() {
-      modalOpcoesImagem.classList.remove("show");
-      modalOpcoesImagem.setAttribute("aria-hidden", "true");
+      DOM.modalOpcoesImagem.classList.add("hidden");
+      DOM.modalOpcoesImagem.classList.remove("flex");
+      DOM.modalOpcoesImagem.setAttribute("aria-hidden", "true");
     };
 
-    // Disparar o input de upload oculto para a opção "Alterar"
     window.dispararInputUploadOculto = function() {
       fecharModalOpcoesImagem();
-      document.getElementById("imagem").click();
+      $("imagem").click();
     };
 
-    // Confirmar exclusão direta do formulário
     window.confirmarExclusaoImagemForm = function() {
       fecharModalOpcoesImagem();
       removerImagemPreview();
-      emitirNotificacao("Imagem excluída do cadastro temporariamente.");
+      emitirNotificacao("Imagem desanexada.");
     };
 
-    // Abrir o estúdio de edição baseado em canvas nativo
+    // Gerenciador Estúdio de Edição de Imagem
     window.abrirEstudioEditor = function() {
       fecharModalOpcoesImagem();
-      if (!imagemBase64FormTemp) return;
+      if (!STATE.imagemBase64FormTemp) return;
 
-      editorImgObj = new Image();
-      editorImgObj.src = imagemBase64FormTemp;
-      editorImgObj.onload = function() {
-        // Resetar o estado interno de manipulação antes de carregar
-        editorRotacao = 0;
-        editorInvertidoH = false;
-        editorInvertidoV = false;
-        editorPretoBranco = false;
+      STATE.editor.imgObj = new Image();
+      STATE.editor.imgObj.src = STATE.imagemBase64FormTemp;
+      STATE.editor.imgObj.onload = function() {
+        // Reset editor
+        STATE.editor.rotacao = 0;
+        STATE.editor.invertidoH = false;
+        STATE.editor.invertidoV = false;
+        STATE.editor.pretoBranco = false;
+        STATE.editor.modoLapis = false;
 
-        editorModoLapis = false;
-        const btnLapis = document.getElementById("btnToolLapis");
-        const panelLapis = document.getElementById("lapisControlsPanel");
-        if (btnLapis) btnLapis.classList.remove("active");
-        if (panelLapis) panelLapis.style.display = "none";
-
-        document.getElementById("btnToolGrayscale").classList.remove("active");
+        if (DOM.btnToolLapis) DOM.btnToolLapis.classList.remove("bg-indigo-600", "text-white");
+        if (DOM.btnToolLapis) DOM.btnToolLapis.classList.add("bg-slate-800", "text-slate-200");
+        if (DOM.lapisControlsPanel) DOM.lapisControlsPanel.style.display = "none";
+        if (DOM.btnToolGrayscale) DOM.btnToolGrayscale.classList.remove("bg-indigo-600", "text-white");
+        if (DOM.btnToolGrayscale) DOM.btnToolGrayscale.classList.add("bg-slate-800", "text-slate-200");
         
-        modalEstudio.classList.add("show");
-        modalEstudio.setAttribute("aria-hidden", "false");
+        DOM.modalEstudio.classList.remove("hidden");
+        DOM.modalEstudio.classList.add("flex");
+        DOM.modalEstudio.setAttribute("aria-hidden", "false");
         desenharCanvasEditor();
       };
     };
 
     window.fecharEstudioEditor = function() {
-      modalEstudio.classList.remove("show");
-      modalEstudio.setAttribute("aria-hidden", "true");
+      DOM.modalEstudio.classList.add("hidden");
+      DOM.modalEstudio.classList.remove("flex");
+      DOM.modalEstudio.setAttribute("aria-hidden", "true");
     };
 
-    // Desenha a imagem no Canvas aplicando as transformações (rotação, espelhamento, escala de cinzas)
     function desenharCanvasEditor() {
-      if (!editorImgObj || !canvasEditor) return;
+      const canvas = DOM.canvasEditor;
+      if (!STATE.editor.imgObj || !canvas) return;
       
-      const ctx = canvasEditor.getContext("2d");
+      const ctx = canvas.getContext("2d");
+      const anguloRadiano = (STATE.editor.rotacao * Math.PI) / 180;
+      const isHorizontal = Math.abs(STATE.editor.rotacao % 180) === 90;
       
-      // Determina as novas dimensões baseadas na rotação (muda se for 90 ou 270 graus)
-      const anguloRadiano = (editorRotacao * Math.PI) / 180;
-      const isHorizontal = Math.abs(editorRotacao % 180) === 90;
+      const canvasWidth = isHorizontal ? STATE.editor.imgObj.height : STATE.editor.imgObj.width;
+      const canvasHeight = isHorizontal ? STATE.editor.imgObj.width : STATE.editor.imgObj.height;
       
-      const canvasWidth = isHorizontal ? editorImgObj.height : editorImgObj.width;
-      const canvasHeight = isHorizontal ? editorImgObj.width : editorImgObj.height;
-      
-      canvasEditor.width = canvasWidth;
-      canvasEditor.height = canvasHeight;
+      canvas.width = canvasWidth;
+      canvas.height = canvasHeight;
       
       ctx.clearRect(0, 0, canvasWidth, canvasHeight);
       ctx.save();
       
-      // Rotaciona a partir do centro
       ctx.translate(canvasWidth / 2, canvasHeight / 2);
       ctx.rotate(anguloRadiano);
       
-      // Controla o espelhamento da imagem
-      const escalaH = editorInvertidoH ? -1 : 1;
-      const escalaV = editorInvertidoV ? -1 : 1;
+      const escalaH = STATE.editor.invertidoH ? -1 : 1;
+      const escalaV = STATE.editor.invertidoV ? -1 : 1;
       ctx.scale(escalaH, escalaV);
       
-      // Renderiza a imagem rotacionada e espelhada
-      ctx.drawImage(editorImgObj, -editorImgObj.width / 2, -editorImgObj.height / 2);
+      ctx.drawImage(STATE.editor.imgObj, -STATE.editor.imgObj.width / 2, -STATE.editor.imgObj.height / 2);
       ctx.restore();
 
-      // Aplica efeito preto e branco se ativo
-      if (editorPretoBranco) {
+      if (STATE.editor.pretoBranco) {
         const imgData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
         const data = imgData.data;
         for (let i = 0; i < data.length; i += 4) {
-          const r = data[i];
-          const g = data[i + 1];
-          const b = data[i + 2];
-          // Luma formula para escala de cinzas
-          const cinza = 0.299 * r + 0.587 * g + 0.114 * b;
-          data[i] = cinza;     // R
-          data[i + 1] = cinza; // G
-          data[i + 2] = cinza; // B
+          const cinza = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+          data[i] = data[i+1] = data[i+2] = cinza;
         }
         ctx.putImageData(imgData, 0, 0);
       }
     }
 
-    // Ferramentas de Ajustes Geométricos
     window.editorRotacionar = function(graus) {
-      editorRotacao = (editorRotacao + graus) % 360;
-      if (editorRotacao < 0) editorRotacao += 360;
+      STATE.editor.rotacao = (STATE.editor.rotacao + graus) % 360;
+      if (STATE.editor.rotacao < 0) STATE.editor.rotacao += 360;
       desenharCanvasEditor();
     };
 
     window.editorInverterHorizontal = function() {
-      editorInvertidoH = !editorInvertidoH;
+      STATE.editor.invertidoH = !STATE.editor.invertidoH;
       desenharCanvasEditor();
     };
 
     window.editorInverterVertical = function() {
-      editorInvertidoV = !editorInvertidoV;
+      STATE.editor.invertidoV = !STATE.editor.invertidoV;
       desenharCanvasEditor();
     };
 
     window.editorAlternarPretoBranco = function() {
-      editorPretoBranco = !editorPretoBranco;
-      const btn = document.getElementById("btnToolGrayscale");
-      if (editorPretoBranco) {
-        btn.classList.add("active");
+      STATE.editor.pretoBranco = !STATE.editor.pretoBranco;
+      if (STATE.editor.pretoBranco) {
+        DOM.btnToolGrayscale.classList.add("bg-indigo-600", "text-white");
+        DOM.btnToolGrayscale.classList.remove("bg-slate-800", "text-slate-200");
       } else {
-        btn.classList.remove("active");
+        DOM.btnToolGrayscale.classList.remove("bg-indigo-600", "text-white");
+        DOM.btnToolGrayscale.classList.add("bg-slate-800", "text-slate-200");
       }
       desenharCanvasEditor();
     };
 
-    let editorDesenhando = false;
-    let editorModoLapis = false;
-    let ultimoX = 0;
-    let ultimoY = 0;
-    let lapisCor = "#ef4444";
-    let lapisLargura = 4;
-
     window.editorAlternarLapis = function() {
-      editorModoLapis = !editorModoLapis;
-      const btn = document.getElementById("btnToolLapis");
-      const panel = document.getElementById("lapisControlsPanel");
+      STATE.editor.modoLapis = !STATE.editor.modoLapis;
       
-      if (editorModoLapis) {
-        btn.classList.add("active");
-        panel.style.display = "flex";
-        // Congela as transformações atuais como uma nova imagem de fundo para que o usuário desenhe livremente
+      if (STATE.editor.modoLapis) {
+        DOM.btnToolLapis.classList.add("bg-indigo-600", "text-white");
+        DOM.btnToolLapis.classList.remove("bg-slate-800", "text-slate-200");
+        DOM.lapisControlsPanel.style.display = "flex";
         bakarTransformacoes();
       } else {
-        btn.classList.remove("active");
-        panel.style.display = "none";
+        DOM.btnToolLapis.classList.remove("bg-indigo-600", "text-white");
+        DOM.btnToolLapis.classList.add("bg-slate-800", "text-slate-200");
+        DOM.lapisControlsPanel.style.display = "none";
       }
     };
 
     window.atualizarConfigLapis = function() {
-      const picker = document.getElementById("lapisCorPicker");
-      const slider = document.getElementById("lapisEspessuraSlider");
-      const valText = document.getElementById("lapisEspessuraVal");
-      
-      if (picker && slider && valText) {
-        lapisCor = picker.value;
-        lapisLargura = parseInt(slider.value);
-        valText.innerText = `${lapisLargura}px`;
+      if (DOM.lapisCorPicker && DOM.lapisEspessuraSlider && DOM.lapisEspessuraVal) {
+        STATE.editor.lapisCor = DOM.lapisCorPicker.value;
+        STATE.editor.lapisLargura = parseInt(DOM.lapisEspessuraSlider.value);
+        DOM.lapisEspessuraVal.innerText = `${STATE.editor.lapisLargura}px`;
       }
     };
 
     function bakarTransformacoes() {
-      if (!canvasEditor) return;
-      const tempBase64 = canvasEditor.toDataURL("image/jpeg", 0.9);
-      editorImgObj = new Image();
-      editorImgObj.src = tempBase64;
-      editorImgObj.onload = function() {
-        // Redefine as rotações/espelhamentos temporários após estarem "assados" no arquivo base
-        editorRotacao = 0;
-        editorInvertidoH = false;
-        editorInvertidoV = false;
-        editorPretoBranco = false;
-        document.getElementById("btnToolGrayscale").classList.remove("active");
+      const canvas = DOM.canvasEditor;
+      if (!canvas) return;
+      const tempBase64 = canvas.toDataURL("image/jpeg", 0.9);
+      STATE.editor.imgObj = new Image();
+      STATE.editor.imgObj.src = tempBase64;
+      STATE.editor.imgObj.onload = function() {
+        STATE.editor.rotacao = 0;
+        STATE.editor.invertidoH = false;
+        STATE.editor.invertidoV = false;
+        STATE.editor.pretoBranco = false;
+        DOM.btnToolGrayscale.classList.remove("bg-indigo-600", "text-white");
+        DOM.btnToolGrayscale.classList.add("bg-slate-800", "text-slate-200");
         desenharCanvasEditor();
       };
     }
 
     function obterCoordenadasEvento(e) {
-      const rect = canvasEditor.getBoundingClientRect();
-      const scaleX = canvasEditor.width / rect.width;
-      const scaleY = canvasEditor.height / rect.height;
+      const canvas = DOM.canvasEditor;
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
       
       let clientX, clientY;
       if (e.touches && e.touches.length > 0) {
@@ -1960,92 +942,83 @@
     }
 
     window.iniciarDesenho = function(e) {
-      if (!editorModoLapis) return;
+      if (!STATE.editor.modoLapis) return;
       e.preventDefault();
-      editorDesenhando = true;
+      STATE.editor.desenhando = true;
       const coords = obterCoordenadasEvento(e);
-      ultimoX = coords.x;
-      ultimoY = coords.y;
+      STATE.editor.ultimoX = coords.x;
+      STATE.editor.ultimoY = coords.y;
     };
 
     window.desenharLinha = function(e) {
-      if (!editorDesenhando || !editorModoLapis) return;
+      if (!STATE.editor.desenhando || !STATE.editor.modoLapis) return;
       e.preventDefault();
       const coords = obterCoordenadasEvento(e);
-      const ctx = canvasEditor.getContext("2d");
+      const ctx = DOM.canvasEditor.getContext("2d");
       
       ctx.beginPath();
-      ctx.moveTo(ultimoX, ultimoY);
+      ctx.moveTo(STATE.editor.ultimoX, STATE.editor.ultimoY);
       ctx.lineTo(coords.x, coords.y);
-      ctx.strokeStyle = lapisCor;
-      ctx.lineWidth = lapisLargura;
+      ctx.strokeStyle = STATE.editor.lapisCor;
+      ctx.lineWidth = STATE.editor.lapisLargura;
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
       ctx.stroke();
       
-      ultimoX = coords.x;
-      ultimoY = coords.y;
+      STATE.editor.ultimoX = coords.x;
+      STATE.editor.ultimoY = coords.y;
     };
 
-    window.pararDesenho = function(e) {
-      if (editorDesenhando) {
-        editorDesenhando = false;
+    window.pararDesenho = function() {
+      if (STATE.editor.desenhando) {
+        STATE.editor.desenhando = false;
         const tempImg = new Image();
-        tempImg.src = canvasEditor.toDataURL("image/jpeg", 0.9);
+        tempImg.src = DOM.canvasEditor.toDataURL("image/jpeg", 0.9);
         tempImg.onload = function() {
-          editorImgObj = tempImg;
+          STATE.editor.imgObj = tempImg;
         };
       }
     };
 
     window.editorResetarAjustes = function() {
-      editorRotacao = 0;
-      editorInvertidoH = false;
-      editorInvertidoV = false;
-      editorPretoBranco = false;
-      document.getElementById("btnToolGrayscale").classList.remove("active");
+      STATE.editor.rotacao = 0;
+      STATE.editor.invertidoH = false;
+      STATE.editor.invertidoV = false;
+      STATE.editor.pretoBranco = false;
+      STATE.editor.modoLapis = false;
       
-      // Redefine o lápis e seu painel ao limpar tudo
-      editorModoLapis = false;
-      const btn = document.getElementById("btnToolLapis");
-      const panel = document.getElementById("lapisControlsPanel");
-      if (btn) btn.classList.remove("active");
-      if (panel) panel.style.display = "none";
+      DOM.btnToolGrayscale.classList.remove("bg-indigo-600", "text-white");
+      DOM.btnToolGrayscale.classList.add("bg-slate-800", "text-slate-200");
+      DOM.btnToolLapis.classList.remove("bg-indigo-600", "text-white");
+      DOM.btnToolLapis.classList.add("bg-slate-800", "text-slate-200");
+      DOM.lapisControlsPanel.style.display = "none";
 
-      editorImgObj = new Image();
-      editorImgObj.src = imagemBase64FormTemp;
-      editorImgObj.onload = function() {
-        desenharCanvasEditor();
-      };
+      STATE.editor.imgObj = new Image();
+      STATE.editor.imgObj.src = STATE.imagemBase64FormTemp;
+      STATE.editor.imgObj.onload = desenharCanvasEditor;
     };
 
-    // Converte a edição de imagem do estúdio em base64 e atualiza o preview do formulário
     window.salvarEdicaoImagemEstudio = function() {
-      if (!canvasEditor) return;
+      if (!DOM.canvasEditor) return;
       
-      const novaImagemBase64 = canvasEditor.toDataURL("image/jpeg", 0.75);
-      imagemBase64FormTemp = novaImagemBase64;
-      exibirPreviewForm(imagemBase64FormTemp);
+      const novaImagemBase64 = DOM.canvasEditor.toDataURL("image/jpeg", 0.75);
+      STATE.imagemBase64FormTemp = novaImagemBase64;
+      exibirPreviewForm(STATE.imagemBase64FormTemp);
       
       fecharEstudioEditor();
-      emitirNotificacao("Ajustes aplicados na imagem do cadastro!");
+      emitirNotificacao("Edição salva com sucesso!");
     };
 
-    // Navegação Reativa Sem Redirecionamentos (SPA)
+    // Navegação entre abas
     function navegarAbas(secaoDestino) {
       const secoes = document.querySelectorAll('.view-section');
-      const botoes = document.querySelectorAll('.menu-dock button');
+      const botoes = document.querySelectorAll('nav button');
 
-      secoes.forEach(sec => {
-        sec.classList.remove('active');
-      });
+      secoes.forEach(sec => sec.classList.remove('active'));
+      botoes.forEach(btn => btn.classList.remove('active'));
 
-      botoes.forEach(btn => {
-        btn.classList.remove('active');
-      });
-
-      const elementSecao = document.getElementById(`sec-${secaoDestino}`);
-      const elementBotao = document.getElementById(`btnNav-${secaoDestino}`);
+      const elementSecao = $(`sec-${secaoDestino}`);
+      const elementBotao = $(`btnNav-${secaoDestino}`);
 
       if (elementSecao && elementBotao) {
         elementSecao.classList.add('active');
@@ -2053,8 +1026,7 @@
       }
 
       if (secaoDestino === 'prontas') {
-        const inputPesquisa = document.getElementById("inputPesquisa");
-        if (inputPesquisa) inputPesquisa.value = "";
+        if (DOM.inputPesquisa) DOM.inputPesquisa.value = "";
         atualizarDropdownFiltroCards();
         renderizarCartoesProntas();
       } else if (secaoDestino === 'cadastro') {
@@ -2067,44 +1039,33 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // Máscaras de digitação em tempo de execução
+    // Tratamento de Inputs e Máscaras
     function configurarTratamentoInputs() {
-      if (inputCelular) {
-        inputCelular.addEventListener("input", (e) => {
-          let v = e.target.value.replace(/\D/g, ""); // Apenas dígitos
-          v = v.substring(0, 11);
-          
+      if (DOM.inputCelular) {
+        DOM.inputCelular.addEventListener("input", (e) => {
+          let v = e.target.value.replace(/\D/g, "").substring(0, 11);
           let formatado = "";
-          if (v.length > 0) {
-            formatado += "(" + v.substring(0, 2);
-          }
-          if (v.length > 2) {
-            formatado += ") " + v.substring(2, 3);
-          }
-          if (v.length > 3) {
-            formatado += " " + v.substring(3, 7);
-          }
-          if (v.length > 7) {
-            formatado += "-" + v.substring(7, 11);
-          }
+          if (v.length > 0) formatado += "(" + v.substring(0, 2);
+          if (v.length > 2) formatado += ") " + v.substring(2, 3);
+          if (v.length > 3) formatado += " " + v.substring(3, 7);
+          if (v.length > 7) formatado += "-" + v.substring(7, 11);
           e.target.value = formatado;
         });
       }
 
-      if (inputId) {
-        inputId.addEventListener("input", (e) => {
+      if (DOM.inputId) {
+        DOM.inputId.addEventListener("input", (e) => {
           e.target.value = e.target.value.replace(/\D/g, "");
         });
       }
     }
 
-    // Manipulação e Preview de Imagem em Tempo de Execução
     async function manipularSelecaoImagem(event) {
       const input = event.target;
       if (input.files && input.files[0]) {
         try {
-          imagemBase64FormTemp = await converterImagemCompacta(input.files[0]);
-          exibirPreviewForm(imagemBase64FormTemp);
+          STATE.imagemBase64FormTemp = await converterImagemCompacta(input.files[0]);
+          exibirPreviewForm(STATE.imagemBase64FormTemp);
         } catch (erro) {
           console.error("Falha no processamento do arquivo de imagem:", erro);
           emitirNotificacao("Erro ao carregar imagem.");
@@ -2114,32 +1075,33 @@
     }
 
     function exibirPreviewForm(base64) {
-      const wrapper = document.getElementById("previewWrapper");
-      const img = document.getElementById("imagePreviewElement");
-      if (wrapper && img && base64) {
-        img.src = base64;
-        wrapper.style.display = "block";
+      if (DOM.previewWrapper && DOM.imagePreviewElement && base64) {
+        DOM.imagePreviewElement.src = base64;
+        DOM.previewWrapper.classList.remove("hidden");
+        DOM.previewWrapper.classList.add("block");
       }
     }
 
     function removerImagemPreview() {
-      imagemBase64FormTemp = "";
-      const wrapper = document.getElementById("previewWrapper");
-      const input = document.getElementById("imagem");
-      if (wrapper) wrapper.style.display = "none";
+      STATE.imagemBase64FormTemp = "";
+      if (DOM.previewWrapper) {
+        DOM.previewWrapper.classList.add("hidden");
+        DOM.previewWrapper.classList.remove("block");
+      }
+      const input = $("imagem");
       if (input) input.value = "";
     }
 
-    // Submissão Otimizada do Formulário com Compressão e Prevenção de perda de dados
-    if (formCadastro) {
-      formCadastro.addEventListener("submit", async (e) => {
+    // Lógica do Formulário de Cadastro
+    if (DOM.formCadastro) {
+      DOM.formCadastro.addEventListener("submit", async (e) => {
         e.preventDefault();
 
-        const celular = document.getElementById("celular").value;
-        const id = document.getElementById("id").value;
-        const pix = document.getElementById("pix") ? document.getElementById("pix").value : "";
-        const link = document.getElementById("link").value;
-        const afiliado = document.getElementById("afiliado") ? document.getElementById("afiliado").value : "";
+        const celular = DOM.inputCelular.value;
+        const id = DOM.inputId.value;
+        const pix = DOM.inputPix ? DOM.inputPix.value : "";
+        const link = DOM.inputLink.value;
+        const afiliado = DOM.selectAfiliado ? DOM.selectAfiliado.value : "";
 
         const novoRegisto = {
           celular,
@@ -2147,55 +1109,45 @@
           pix,
           link,
           afiliado,
-          imagem: imagemBase64FormTemp // Usa a imagem do preview ou vazio
+          imagem: STATE.imagemBase64FormTemp
         };
 
-        if (editandoIdx === -1) {
-          const conflito = dados.some(d => d.id === id);
-          if (conflito) {
+        if (STATE.editandoIdx === -1) {
+          if (STATE.dados.some(d => d.id === id)) {
             emitirNotificacao("Erro: Este ID já se encontra cadastrado.");
             return;
           }
-          dados.push(novoRegisto);
-          emitirNotificacao("Registro gravado!");
+          STATE.dados.push(novoRegisto);
+          emitirNotificacao("Registro gravado com sucesso!");
         } else {
-          const conflito = dados.some((d, idx) => d.id === id && idx !== editandoIdx);
-          if (conflito) {
+          if (STATE.dados.some((d, idx) => d.id === id && idx !== STATE.editandoIdx)) {
             emitirNotificacao("Erro: Este ID já está sendo utilizado.");
             return;
           }
           
-          // Remove o item antigo da posição original
-          dados.splice(editandoIdx, 1);
-          // Adiciona o novo registro atualizado ao final do array (aparecerá primeiro com .reverse() nas Prontas)
-          dados.push(novoRegisto);
+          STATE.dados.splice(STATE.editandoIdx, 1);
+          STATE.dados.push(novoRegisto);
           
           emitirNotificacao("Registro atualizado!");
           fecharEstadoEdicaoForm();
         }
 
         guardarLocalStore();
-        
-        formCadastro.reset();
+        DOM.formCadastro.reset();
         removerImagemPreview();
         atualizarListagens();
       });
     }
 
-    // Persistência robusta local com Rollback automático
     function guardarLocalStore() {
       try {
-        localStorage.setItem("cadastros", JSON.stringify(dados));
+        localStorage.setItem("cadastros", JSON.stringify(STATE.dados));
         calcularConsumoEspaco();
       } catch (e) {
-        console.error("Estouro de armazenamento local detectado:", e);
-        emitirNotificacao("Erro crítico: Limite de armazenamento excedido! Operação cancelada.");
-        try {
-          dados = JSON.parse(localStorage.getItem("cadastros")) || [];
-          atualizarListagens();
-        } catch (err) {
-          console.error("Falha ao reverter base de dados em memória:", err);
-        }
+        console.error("Estouro de armazenamento local:", e);
+        emitirNotificacao("Erro crítico: Espaço do LocalStorage esgotado!");
+        carregarBancoLocal();
+        atualizarListagens();
       }
     }
 
@@ -2212,19 +1164,16 @@
         const limiteDesejado = 5.0; 
         const percentual = Math.min((megabytes / limiteDesejado) * 100, 100);
 
-        const lbl = document.getElementById("storageSizeLabel");
-        const bar = document.getElementById("storageBarFill");
-
-        if (lbl && bar) {
-          lbl.innerText = `${megabytes.toFixed(2)} MB / ${limiteDesejado.toFixed(2)} MB`;
-          bar.style.width = `${percentual}%`;
+        if (DOM.storageSizeLabel && DOM.storageBarFill) {
+          DOM.storageSizeLabel.innerText = `${megabytes.toFixed(2)} MB / ${limiteDesejado.toFixed(2)} MB`;
+          DOM.storageBarFill.style.width = `${percentual}%`;
           
           if (percentual > 85) {
-            bar.style.backgroundColor = "var(--danger-color)";
+            DOM.storageBarFill.className = "h-full bg-red-500 rounded-full transition-all duration-500";
           } else if (percentual > 60) {
-            bar.style.backgroundColor = "var(--warning-color)";
+            DOM.storageBarFill.className = "h-full bg-amber-500 rounded-full transition-all duration-500";
           } else {
-            bar.style.backgroundColor = "var(--primary-color)";
+            DOM.storageBarFill.className = "h-full bg-indigo-500 rounded-full transition-all duration-500";
           }
         }
       } catch (err) {
@@ -2233,43 +1182,38 @@
     }
 
     function atualizarDropdownAfiliados() {
-      const selectAfiliado = document.getElementById("afiliado");
-      if (!selectAfiliado) return;
+      if (!DOM.selectAfiliado) return;
+      const valorSelecionado = DOM.selectAfiliado.value;
+      const celularesUnicos = [...new Set(STATE.dados.map(d => d.celular).filter(Boolean))];
 
-      const valorSelecionado = selectAfiliado.value;
-      const celularesUnicos = [...new Set(dados.map(d => d.celular).filter(Boolean))];
-
-      selectAfiliado.innerHTML = '<option value="">Selecione um Afiliado (Celular)</option>';
-      
+      DOM.selectAfiliado.innerHTML = '<option value="">Selecione um Afiliado (Celular)</option>';
       celularesUnicos.forEach(cel => {
         const opt = document.createElement("option");
         opt.value = cel;
         opt.textContent = cel;
-        selectAfiliado.appendChild(opt);
+        DOM.selectAfiliado.appendChild(opt);
       });
 
       if (celularesUnicos.includes(valorSelecionado)) {
-        selectAfiliado.value = valorSelecionado;
+        DOM.selectAfiliado.value = valorSelecionado;
       }
     }
 
     function atualizarDropdownFiltroCards() {
-      const filterSel = document.getElementById("filtroAfiliadoCards");
-      if (!filterSel) return;
+      if (!DOM.filtroAfiliadoCards) return;
+      const valorAtivo = DOM.filtroAfiliadoCards.value;
+      const celularesUnicos = [...new Set(STATE.dados.map(d => d.celular).filter(Boolean))];
 
-      const valorAtivo = filterSel.value;
-      const celularesUnicos = [...new Set(dados.map(d => d.celular).filter(Boolean))];
-
-      filterSel.innerHTML = '<option value="">Todos os Afiliados</option>';
+      DOM.filtroAfiliadoCards.innerHTML = '<option value="">Todos os Afiliados</option>';
       celularesUnicos.forEach(cel => {
         const opt = document.createElement("option");
         opt.value = cel;
         opt.textContent = cel;
-        filterSel.appendChild(opt);
+        DOM.filtroAfiliadoCards.appendChild(opt);
       });
 
       if (celularesUnicos.includes(valorAtivo)) {
-        filterSel.value = valorAtivo;
+        DOM.filtroAfiliadoCards.value = valorAtivo;
       }
     }
 
@@ -2281,80 +1225,74 @@
     }
 
     function renderizarIdsSimplificados() {
-      const listaIdsContainer = document.getElementById("listaIds");
-      if (!listaIdsContainer) return;
+      if (!DOM.listaIds) return;
+      DOM.listaIds.innerHTML = "";
 
-      listaIdsContainer.innerHTML = "";
-
-      if (dados.length === 0) {
-        listaIdsContainer.innerHTML = `<div class="sem-dados">Nenhum ID cadastrado ainda.</div>`;
+      if (STATE.dados.length === 0) {
+        DOM.listaIds.innerHTML = `<div class="text-center p-6 bg-slate-950 border border-slate-850 rounded-2xl text-slate-500 text-sm">Nenhum ID cadastrado ainda.</div>`;
         return;
       }
 
-      dados.forEach((reg, idx) => {
-        listaIdsContainer.innerHTML += `
-          <div class="card card-gestao">
-            <div>
-              <span class="badge-id">ID: ${reg.id}</span>
-            </div>
-            <div class="card-actions-row">
-              <button class="btn-editar" onclick="iniciarEdicaoFluxo(${idx})">✏️ Editar</button>
-              <button class="btn-excluir" onclick="pedirConfirmacaoExcluir(${idx})">🗑️ Excluir</button>
-            </div>
+      const fragment = document.createDocumentFragment();
+      STATE.dados.forEach((reg, idx) => {
+        const div = document.createElement("div");
+        div.className = "flex items-center justify-between p-4 bg-slate-900 border border-slate-800 rounded-2xl shadow-sm";
+        div.innerHTML = `
+          <div>
+            <span class="inline-block py-1 px-3 bg-slate-950 text-slate-300 font-bold font-mono text-xs rounded-full border border-slate-850">ID: ${escapeHTML(reg.id)}</span>
+          </div>
+          <div class="flex gap-2">
+            <button class="py-1.5 px-3 rounded-lg text-xs font-semibold bg-amber-500/10 text-amber-500 hover:bg-amber-500 hover:text-white transition-all active:scale-95" onclick="iniciarEdicaoFluxo(${idx})">✏️ Editar</button>
+            <button class="py-1.5 px-3 rounded-lg text-xs font-semibold bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all active:scale-95" onclick="pedirConfirmacaoExcluir(${idx})">🗑️ Excluir</button>
           </div>
         `;
+        fragment.appendChild(div);
       });
+      DOM.listaIds.appendChild(fragment);
     }
 
     window.iniciarEdicaoFluxo = function(idx) {
-      if (!dados[idx]) return;
+      if (!STATE.dados[idx]) return;
 
-      editandoIdx = idx;
+      STATE.editandoIdx = idx;
       
-      document.getElementById("celular").value = dados[idx].celular || "";
-      document.getElementById("id").value = dados[idx].id || "";
-      if (document.getElementById("pix")) {
-        document.getElementById("pix").value = dados[idx].pix || "";
-      }
-      document.getElementById("link").value = dados[idx].link || "";
+      DOM.inputCelular.value = STATE.dados[idx].celular || "";
+      DOM.inputId.value = STATE.dados[idx].id || "";
+      if (DOM.inputPix) DOM.inputPix.value = STATE.dados[idx].pix || "";
+      DOM.inputLink.value = STATE.dados[idx].link || "";
       
       atualizarDropdownAfiliados();
-      if (document.getElementById("afiliado")) {
-        document.getElementById("afiliado").value = dados[idx].afiliado || "";
-      }
+      if (DOM.selectAfiliado) DOM.selectAfiliado.value = STATE.dados[idx].afiliado || "";
 
-      if (dados[idx].imagem) {
-        imagemBase64FormTemp = dados[idx].imagem;
-        exibirPreviewForm(imagemBase64FormTemp);
+      if (STATE.dados[idx].imagem) {
+        STATE.imagemBase64FormTemp = STATE.dados[idx].imagem;
+        exibirPreviewForm(STATE.imagemBase64FormTemp);
       } else {
         removerImagemPreview();
       }
 
-      document.getElementById("tituloCadastroSecao").innerText = "Editar Cadastro";
-      const btn = document.getElementById("btnSalvar");
-      btn.innerText = "Atualizar Cadastro";
-      btn.style.backgroundColor = "var(--warning-color)";
-      document.getElementById("btnCancelarEdicao").style.display = "block";
+      DOM.tituloCadastroSecao.innerText = "Editar Cadastro";
+      DOM.btnSalvar.innerText = "Atualizar Cadastro";
+      DOM.btnSalvar.classList.remove('bg-indigo-600', 'hover:bg-indigo-500');
+      DOM.btnSalvar.classList.add('bg-amber-600', 'hover:bg-amber-500');
+      DOM.btnCancelarEdicao.classList.remove("hidden");
 
-      if (inputCelular) {
-        inputCelular.dispatchEvent(new Event("input"));
-      }
-
+      if (DOM.inputCelular) DOM.inputCelular.dispatchEvent(new Event("input"));
       window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     function fecharEstadoEdicaoForm() {
-      editandoIdx = -1;
-      document.getElementById("tituloCadastroSecao").innerText = "Novo Cadastro";
-      const btn = document.getElementById("btnSalvar");
-      btn.innerText = "Salvar Cadastro";
-      btn.style.backgroundColor = "var(--primary-color)";
-      document.getElementById("btnCancelarEdicao").style.display = "none";
+      STATE.editandoIdx = -1;
+      DOM.tituloCadastroSecao.innerText = "Novo Cadastro";
+      DOM.btnSalvar.innerText = "Salvar Cadastro";
+      DOM.btnSalvar.classList.remove('bg-amber-600', 'hover:bg-amber-500');
+      DOM.btnSalvar.classList.add('bg-indigo-600', 'hover:bg-indigo-500');
+      DOM.btnCancelarEdicao.classList.add("hidden");
     }
 
     window.cancelarFluxoEdicao = function() {
       fecharEstadoEdicaoForm();
-      formCadastro.reset();
+      DOM.formCadastro.reset();
       removerImagemPreview();
       emitirNotificacao("Edição cancelada.");
     };
@@ -2388,7 +1326,6 @@
             canvas.width = width;
             canvas.height = height;
             ctx.drawImage(img, 0, 0, width, height);
-
             resolve(canvas.toDataURL("image/jpeg", 0.65));
           };
           img.onerror = reject;
@@ -2398,8 +1335,8 @@
     }
 
     function filtrarCartoesProntas() {
-      const termo = document.getElementById("inputPesquisa").value.toLowerCase().trim();
-      const filtroAfiliado = document.getElementById("filtroAfiliadoCards").value;
+      const termo = DOM.inputPesquisa.value.toLowerCase().trim();
+      const filtroAfiliado = DOM.filtroAfiliadoCards.value;
       const cartoes = document.querySelectorAll(".card-item-exibicao-alvo");
 
       cartoes.forEach(cartao => {
@@ -2417,144 +1354,145 @@
         const bateAfiliado = !filtroAfiliado || afiliado === filtroAfiliado;
 
         if (batePesquisa && bateAfiliado) {
-          cartao.style.display = "flex";
+          cartao.classList.remove("hidden");
+          cartao.classList.add("flex");
         } else {
-          cartao.style.display = "none";
+          cartao.classList.remove("flex");
+          cartao.classList.add("hidden");
         }
       });
     }
 
     function renderizarCartoesProntas() {
-      const containerProntas = document.getElementById("listaCompleta");
-      if (!containerProntas) return;
+      if (!DOM.listaCompleta) return;
 
-      if (dados.length === 0) {
-        containerProntas.innerHTML = `
-          <div class="sem-dados">
-            <span style="font-size: 3rem;">📂</span>
-            <p>Nenhum registro disponível.</p>
-            <button onclick="navegarAbas('cadastro')" class="btn-ir-cadastrar">Fazer Cadastro</button>
+      if (STATE.dados.length === 0) {
+        DOM.listaCompleta.className = "flex justify-center w-full mt-2";
+        DOM.listaCompleta.innerHTML = `
+          <div class="text-center p-8 bg-slate-900 border border-slate-800 rounded-3xl shadow-glass backdrop-blur-md w-full max-w-md">
+            <span class="text-4xl mb-3 block">📂</span>
+            <p class="text-slate-400 font-medium mb-4">Nenhum registro disponível.</p>
+            <button onclick="navegarAbas('cadastro')" class="py-2.5 px-6 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm rounded-xl transition-all shadow-glow">Fazer Cadastro</button>
           </div>`;
         return;
       }
 
-      containerProntas.innerHTML = "";
-
-      const copReversa = [...dados].map((val, idx) => ({ val, originalIdx: idx })).reverse();
+      DOM.listaCompleta.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full mt-2";
+      DOM.listaCompleta.innerHTML = "";
+      const fragment = document.createDocumentFragment();
+      const copReversa = [...STATE.dados].map((val, idx) => ({ val, originalIdx: idx })).reverse();
 
       copReversa.forEach(({ val, originalIdx }) => {
         const apenasNumCelular = val.celular ? val.celular.replace(/\D/g, '') : '';
         const apenasNumAfiliado = val.afiliado ? val.afiliado.replace(/\D/g, '') : '';
 
         const cardContainer = document.createElement("div");
-        cardContainer.className = "card card-exibicao card-item-exibicao-alvo";
+        cardContainer.className = "bg-slate-900/80 border border-slate-800/80 rounded-3xl p-5 shadow-glass backdrop-blur-md flex flex-col justify-between hover:border-indigo-500/40 hover:-translate-y-1 transition-all duration-300 card-item-exibicao-alvo group";
         cardContainer.setAttribute("data-id", val.id.toLowerCase());
         cardContainer.setAttribute("data-celular", apenasNumCelular);
         cardContainer.setAttribute("data-pix", (val.pix || "").toLowerCase());
         cardContainer.setAttribute("data-afiliado", val.afiliado || "");
 
-        cardContainer.innerHTML = `
-          ${val.imagem ? `
-            <div class="card-media" style="cursor: pointer;" onclick="abrirModalImagem(${originalIdx})" title="Clique para ampliar">
-              <img src="${val.imagem}" alt="Imagem do ID ${val.id}">
-            </div>
-          ` : `
-            <div class="card-media-placeholder">
-              <span>🖼️ Sem Imagem Disponível</span>
-            </div>
-          `}
-
-          <div class="card-header-exibicao">
-            <span class="tag-id">🆔 ID: ${val.id}</span>
+        // Criando visual moderno com gradiente se não houver imagem
+        const mediaSection = val.imagem ? `
+          <div class="h-44 w-full rounded-2xl overflow-hidden bg-slate-950 border border-slate-850 shadow-inner cursor-pointer relative" onclick="abrirModalImagem(${originalIdx})" title="Ampliar imagem">
+            <img src="${val.imagem}" alt="Imagem do ID ${escapeHTML(val.id)}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
           </div>
-
-          <div class="card-body">
-            <div class="info-group">
-              <div class="info-item">
-                <span class="info-label">📱 Celular</span>
-                <span class="info-value">${val.celular}</span>
-              </div>
-            </div>
-
-            ${val.pix ? `
-              <div class="info-group">
-                <div class="info-item">
-                  <span class="info-label">🔑 Chave Pix</span>
-                  <span class="info-value" style="font-family: monospace; letter-spacing: 0.02em;">${val.pix}</span>
-                </div>
-              </div>
-            ` : ''}
-
-            <div class="info-group">
-              <div class="info-item">
-                <span class="info-label">🔗 Link Associado</span>
-                <a href="${val.link}" target="_blank" class="info-link" rel="noopener noreferrer">${val.link}</a>
-              </div>
-            </div>
-
-            ${val.afiliado ? `
-              <div class="info-group">
-                <div class="info-item">
-                  <span class="info-label">👤 Afiliado (Agente)</span>
-                  <span class="info-value">${val.afiliado}</span>
-                </div>
-              </div>
-            ` : ''}
-
-            <div class="card-quick-actions">
-              <button class="btn-quick-action btn-copy-celular" onclick="copiarFluxo('${apenasNumCelular}', this, '📱 Celular')">
-                📱 Celular
-              </button>
-
-              <button class="btn-quick-action btn-copy-link" onclick="copiarFluxo('${val.link}', this, '🔗 Link')">
-                🔗 Link
-              </button>
-
-              <button class="btn-quick-action btn-copy-id" onclick="copiarFluxo('${val.id}', this, '🆔 ID')">
-                🆔 ID
-              </button>
-
-              ${val.pix ? `
-                <button class="btn-quick-action btn-copy-pix" onclick="copiarFluxo('${val.pix}', this, '💎 Pix')">
-                  💎 Pix
-                </button>
-              ` : `
-                <button class="btn-quick-action" disabled style="opacity: 0.4; cursor: not-allowed; background: #f1f5f9; color: #94a3b8; border-color: #e2e8f0;">
-                  ❌ Sem Pix
-                </button>
-              `}
-
-              ${val.afiliado ? `
-                <button class="btn-quick-action btn-copy-afiliado btn-span-2" onclick="copiarFluxo('${apenasNumAfiliado}', this, '👤 Copiar Afiliado')">
-                  👤 Copiar Afiliado
-                </button>
-              ` : `
-                <button class="btn-quick-action btn-span-2" disabled style="opacity: 0.4; cursor: not-allowed; background: #f1f5f9; color: #94a3b8; border-color: #e2e8f0;">
-                  ❌ Sem Afiliado
-                </button>
-              `}
-
-              <button class="btn-quick-action btn-share-card btn-span-2" onclick="compartilharRegistroCompleto('${val.id}', '${val.celular}', '${val.pix}', '${val.link}', '${val.afiliado}')">
-                📤 Compartilhar Detalhes
-              </button>
-            </div>
+        ` : `
+          <div class="h-24 w-full rounded-2xl bg-gradient-to-br from-indigo-950/40 via-slate-900 to-indigo-900/30 border border-slate-800/50 flex items-center justify-center text-indigo-400 gap-2">
+            <span class="text-xl">🖼️</span>
+            <span class="text-xs font-semibold tracking-wide">Sem Imagem Anexa</span>
           </div>
         `;
-        containerProntas.appendChild(cardContainer);
+
+        cardContainer.innerHTML = `
+          <div class="space-y-4">
+            ${mediaSection}
+
+            <div class="flex justify-between items-center">
+              <span class="py-1 px-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-extrabold text-xs rounded-full shadow-glow">🆔 ID: ${escapeHTML(val.id)}</span>
+            </div>
+
+            <div class="space-y-2">
+              <div class="bg-slate-950/50 border border-slate-850 p-3 rounded-xl hover:bg-slate-950 transition-all">
+                <span class="text-[10px] uppercase font-bold tracking-widest text-slate-500 block mb-0.5">📱 Celular</span>
+                <span class="text-sm font-semibold text-slate-200">${escapeHTML(val.celular)}</span>
+              </div>
+
+              ${val.pix ? `
+                <div class="bg-slate-950/50 border border-slate-850 p-3 rounded-xl hover:bg-slate-950 transition-all">
+                  <span class="text-[10px] uppercase font-bold tracking-widest text-slate-500 block mb-0.5">🔑 Chave Pix</span>
+                  <span class="text-sm font-mono font-bold text-slate-200 tracking-wide">${escapeHTML(val.pix)}</span>
+                </div>
+              ` : ''}
+
+              <div class="bg-slate-950/50 border border-slate-850 p-3 rounded-xl hover:bg-slate-950 transition-all overflow-hidden text-ellipsis">
+                <span class="text-[10px] uppercase font-bold tracking-widest text-slate-500 block mb-0.5">🔗 Link Associado</span>
+                <a href="${escapeHTML(val.link)}" target="_blank" class="text-sm font-bold text-indigo-400 hover:text-indigo-300 hover:underline break-all" rel="noopener noreferrer">${escapeHTML(val.link)}</a>
+              </div>
+
+              ${val.afiliado ? `
+                <div class="bg-slate-950/50 border border-slate-850 p-3 rounded-xl hover:bg-slate-950 transition-all">
+                  <span class="text-[10px] uppercase font-bold tracking-widest text-slate-500 block mb-0.5">👤 Afiliado (Agente)</span>
+                  <span class="text-sm font-semibold text-slate-200">${escapeHTML(val.afiliado)}</span>
+                </div>
+              ` : ''}
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 mt-4">
+            <button class="py-2.5 px-3 rounded-xl text-xs font-bold bg-emerald-600/15 text-emerald-400 hover:bg-emerald-600 hover:text-white transition-all active:scale-95 flex items-center justify-center gap-1.5" onclick="copiarFluxo('${escapeHTML(apenasNumCelular)}', this, '📱 Celular')">
+              📱 Celular
+            </button>
+
+            <button class="py-2.5 px-3 rounded-xl text-xs font-bold bg-indigo-600/15 text-indigo-400 hover:bg-indigo-600 hover:text-white transition-all active:scale-95 flex items-center justify-center gap-1.5" onclick="copiarFluxo('${escapeHTML(val.link)}', this, '🔗 Link')">
+              🔗 Link
+            </button>
+
+            <button class="py-2.5 px-3 rounded-xl text-xs font-bold bg-slate-850 text-slate-300 hover:bg-slate-800 transition-all active:scale-95 flex items-center justify-center gap-1.5 border border-slate-800" onclick="copiarFluxo('${escapeHTML(val.id)}', this, '🆔 ID')">
+              🆔 ID
+            </button>
+
+            ${val.pix ? `
+              <button class="py-2.5 px-3 rounded-xl text-xs font-bold bg-sky-600/15 text-sky-400 hover:bg-sky-600 hover:text-white transition-all active:scale-95 flex items-center justify-center gap-1.5" onclick="copiarFluxo('${escapeHTML(val.pix)}', this, '💎 Pix')">
+                💎 Pix
+              </button>
+            ` : `
+              <button class="py-2.5 px-3 rounded-xl text-xs font-bold bg-slate-950/40 text-slate-600 border border-slate-850/60 cursor-not-allowed flex items-center justify-center gap-1.5" disabled>
+                ❌ Sem Pix
+              </button>
+            `}
+
+            ${val.afiliado ? `
+              <button class="col-span-2 py-2.5 px-3 rounded-xl text-xs font-bold bg-amber-600/15 text-amber-400 hover:bg-amber-600 hover:text-white transition-all active:scale-95 flex items-center justify-center gap-1.5" onclick="copiarFluxo('${escapeHTML(apenasNumAfiliado)}', this, '👤 Copiar Afiliado')">
+                👤 Copiar Afiliado
+              </button>
+            ` : `
+              <button class="col-span-2 py-2.5 px-3 rounded-xl text-xs font-bold bg-slate-950/40 text-slate-600 border border-slate-850/60 cursor-not-allowed flex items-center justify-center gap-1.5" disabled>
+                ❌ Sem Afiliado
+              </button>
+            `}
+
+            <button class="col-span-2 py-2.5 px-3 rounded-xl text-xs font-extrabold bg-gradient-to-r from-slate-800 to-slate-850 text-slate-100 hover:from-slate-700 hover:to-slate-750 transition-all active:scale-95 flex items-center justify-center gap-1.5 border border-slate-750 shadow-md" onclick="compartilharRegistroCompleto('${escapeHTML(val.id)}', '${escapeHTML(val.celular)}', '${escapeHTML(val.pix)}', '${escapeHTML(val.link)}', '${escapeHTML(val.afiliado)}')">
+              📤 Compartilhar Detalhes
+            </button>
+          </div>
+        `;
+        fragment.appendChild(cardContainer);
       });
+      DOM.listaCompleta.appendChild(fragment);
     }
 
     function fluxoExportarArquivo() {
-      if (dados.length === 0) {
+      if (STATE.dados.length === 0) {
         emitirNotificacao("Não existem registros cadastrados para exportar.");
         return;
       }
 
       try {
-        const conteudo = JSON.stringify(dados, null, 2);
+        const conteudo = JSON.stringify(STATE.dados, null, 2);
         const blob = new Blob([conteudo], { type: "application/json" });
         const url = URL.createObjectURL(blob);
-        
         const dataHoje = new Date().toISOString().slice(0, 10);
         const nomeArquivo = `backup_cadastros_${dataHoje}.json`;
 
@@ -2577,22 +1515,19 @@
     }
 
     function fluxoImportarArquivo() {
-      const input = document.getElementById("importArquivoInput");
-      
+      const input = DOM.importArquivoInput;
       if (!input || !input.files || input.files.length === 0) {
         emitirNotificacao("Por favor, selecione um arquivo de backup (.json) primeiro.");
         return;
       }
 
       const arquivo = input.files[0];
-
       if (arquivo.size > 15 * 1024 * 1024) { 
         emitirNotificacao("Erro: Arquivo grande demais (Máximo: 15MB).");
         return;
       }
 
       const leitor = new FileReader();
-
       leitor.onload = function(e) {
         try {
           const dadosImportados = JSON.parse(e.target.result);
@@ -2605,22 +1540,18 @@
               return;
             }
 
-            dados = dadosImportados;
+            STATE.dados = dadosImportados;
             guardarLocalStore();
             atualizarListagens();
-            emitirNotificacao(`Sucesso! ${dados.length} registros importados.`);
+            emitirNotificacao(`Sucesso! ${STATE.dados.length} registros importados.`);
             input.value = "";
           } else {
             emitirNotificacao("Formato do arquivo inválido (deve ser uma lista JSON).");
           }
         } catch (err) {
           console.error("Falha no parse do arquivo importado:", err);
-          emitirNotificacao("Erro ao processar o arquivo. Certifique-se de que é um JSON válido.");
+          emitirNotificacao("Erro ao processar arquivo. Verifique o arquivo JSON.");
         }
-      };
-
-      leitor.onerror = function() {
-        emitirNotificacao("Erro na leitura do arquivo físico de backup.");
       };
 
       leitor.readAsText(arquivo);
@@ -2630,31 +1561,24 @@
       if (!texto) return;
 
       const htmlOriginal = botaoRef.innerHTML; 
-      const backgroundOriginal = botaoRef.style.background;
-      const colorOriginal = botaoRef.style.color;
+      const classesOriginais = botaoRef.className;
 
       const realizarFeedbackSucesso = () => {
         botaoRef.innerHTML = "✅ Copiado!";
-        botaoRef.style.background = "#e2e8f0";
-        botaoRef.style.color = "#0f172a";
+        botaoRef.className = "py-2.5 px-3 rounded-xl text-xs font-bold bg-emerald-500 text-white transition-all flex items-center justify-center gap-1.5";
 
         emitirNotificacao(`Conteúdo copiado!`);
 
         setTimeout(() => {
           botaoRef.innerHTML = htmlOriginal; 
-          botaoRef.style.background = backgroundOriginal;
-          botaoRef.style.color = colorOriginal;
+          botaoRef.className = classesOriginais;
         }, 1500);
       };
 
       if (navigator.clipboard && window.isSecureContext) {
         navigator.clipboard.writeText(texto)
-          .then(() => {
-            realizarFeedbackSucesso();
-          })
-          .catch(() => {
-            metodoFallbackCopia(texto, realizarFeedbackSucesso);
-          });
+          .then(realizarFeedbackSucesso)
+          .catch(() => metodoFallbackCopia(texto, realizarFeedbackSucesso));
       } else {
         metodoFallbackCopia(texto, realizarFeedbackSucesso);
       }
@@ -2687,7 +1611,7 @@
       if (executouComSucesso) {
         callbackSucesso();
       } else {
-        prompt("Copie manualmente o código abaixo selecionado:", texto);
+        prompt("Copie manualmente o código abaixo:", texto);
       }
     }
 
@@ -2705,18 +1629,16 @@
           title: `Registro ID: ${id}`,
           text: msg
         })
-        .then(() => emitirNotificacao("Informações compartilhadas com sucesso!"))
-        .catch((err) => {
-          console.log("Compartilhamento nativo cancelado ou abortado:", err);
-        });
+        .then(() => emitirNotificacao("Informações compartilhadas!"))
+        .catch((err) => console.log("Compartilhamento nativo abortado:", err));
       } else {
         if (navigator.clipboard && window.isSecureContext) {
           navigator.clipboard.writeText(msg).then(() => {
-            emitirNotificacao("Texto consolidado copiado! Cole onde quiser.");
+            emitirNotificacao("Texto copiado para área de transferência!");
           });
         } else {
           metodoFallbackCopia(msg, () => {
-            emitirNotificacao("Texto de compartilhamento copiado!");
+            emitirNotificacao("Texto copiado!");
           });
         }
       }
