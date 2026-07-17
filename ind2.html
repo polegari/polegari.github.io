@@ -1290,6 +1290,8 @@
       DOM.btnCancelarEdicao.classList.remove("hidden");
 
       if (DOM.inputCelular) DOM.inputCelular.dispatchEvent(new Event("input"));
+      
+      navegarAbas('cadastro');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
@@ -1484,6 +1486,10 @@
                 ❌ Sem Afiliado
               </button>
             `}
+
+            <button class="col-span-2 py-2 px-2 rounded-lg text-[10px] font-bold bg-amber-50/80 text-amber-700 hover:bg-amber-100 active:scale-95 transition-all flex items-center justify-center gap-1 border border-amber-200" onclick="iniciarEdicaoFluxo(${originalIdx})">
+              ✏️ Editar Cadastro
+            </button>
 
             <button class="col-span-2 py-2 px-2 rounded-lg text-[10px] font-bold bg-slate-900 text-white hover:bg-slate-800 transition-all active:scale-95 flex items-center justify-center gap-1 shadow-sm" onclick="compartilharRegistroCompleto('${escapeHTML(val.id)}', '${escapeHTML(val.celular)}', '${escapeHTML(val.pix)}', '${escapeHTML(val.link)}', '${escapeHTML(val.afiliado)}')">
               📤 Compartilhar Detalhes
