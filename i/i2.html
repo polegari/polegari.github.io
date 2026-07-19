@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Assist Plus - Premium IPTV Player</title>
+  <!-- Tailwind CSS para design moderno e responsivo -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Biblioteca de Ícones Lucide -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- HLS.js para reprodução de fluxos de vídeo -->
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <style>
+    /* Estilos estéticos customizados */
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+    
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    
+    /* Customização das barras de rolagem estilo Dark Cinema */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(9, 9, 11, 0.3);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(39, 39, 42, 0.8);
+      border-radius: 99px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #f59e0b;
+    }
+
+    /* Efeito de Nebulosa no Fundo */
+    .nebula-bg {
+      background: radial-gradient(circle at 10% 20%, rgba(120, 119, 198, 0.08) 0%, rgba(0, 0, 0, 0) 44%),
+                  radial-gradient(circle at 90% 80%, rgba(245, 158, 11, 0.05) 0%, rgba(0, 0, 0, 0) 40%),
+                  #030303;
+    }
+
+    /* Efeito Glassmorphic Avançado */
+    .glass-panel {
+      background: rgba(24, 24, 27, 0.6);
+      backdrop-filter: blur(12px) saturate(140%);
+      -webkit-backdrop-filter: blur(12px) saturate(140%);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .glass-card {
+      background: rgba(20, 20, 23, 0.4);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .glass-card:hover {
+      background: rgba(30, 30, 35, 0.7);
+      border-color: rgba(245, 158, 11, 0.3);
+      transform: translateY(-4px);
+    }
+
+    .glass-input {
+      background: rgba(9, 9, 11, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .glass-input:focus {
+      border-color: rgba(245, 158, 11, 0.6);
+      box-shadow: 0 0 15px rgba(245, 158, 11, 0.1);
+    }
+
+    /* Dock Flutuante Mobile */
+    @media (max-width: 768px) {
+      .mobile-dock {
+        position: fixed;
+        bottom: 16px;
+        left: 16px;
+        right: 16px;
+        border-radius: 20px;
+        background: rgba(15, 15, 18, 0.8);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+      }
+    }
+  </style>
+</head>
+<body class="nebula-bg text-gray-100 min-h-screen flex flex-col overflow-hidden select-none">
+
+  <!-- TOAST DE NOTIFICAÇÕES -->
+  <div id="toast" class="fixed top-6 right-6 z-50 transform translate-x-full transition-all duration-300 glass-panel text-white px-5 py-4 rounded-2xl shadow-2xl flex items-center space-x-3 pointer-events-none">
+    <div class="p-2 bg-amber-500/10 text-amber-500 rounded-lg">
+      <i data-lucide="bell" class="w-5 h-5"></i>
+    </div>
+    <div>
+      <p id="toast-message" class="text-xs font-semibold leading-relaxed"></p>
+    </div>
+  </div>
+
+  <!-- TELA DE LOGIN GLASSMORPHIC -->
+  <div id="login-screen" class="fixed inset-0 z-40 bg-zinc-950/80 backdrop-blur-xl flex items-center justify-center p-4 overflow-y-auto">
+    <div class="glass-panel p-8 md:p-10 rounded-[32px] w-full max-w-md shadow-2xl space-y-6 my-8">
+      <div class="text-center space-y-2">
+        <div class="inline-flex p-4 bg-amber-500/10 rounded-[22px] text-amber-500 mb-2 border border-amber-500/20">
+          <i data-lucide="tv" class="w-10 h-10 animate-pulse"></i>
+        </div>
+        <h1 class="text-3xl font-extrabold tracking-wider text-white">ASSIST PLUS</h1>
+        <p class="text-zinc-400 text-xs font-medium">Layout Premium Glassmorphism IPTV</p>
+      </div>
+
+      <!-- Alerta de Bloqueio CORS -->
+      <div class="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 space-y-1">
+        <div class="flex items-center space-x-2 text-amber-500">
+          <i data-lucide="shield-alert" class="w-4 h-4"></i>
+          <span class="text-xs font-bold uppercase tracking-wider">Desbloqueio CORS</span>
+        </div>
+        <p class="text-[11px] text-zinc-300 leading-relaxed">
+          Navegadores impedem conexões externas ao servidor sem uma extensão ativada no seu navegador.
+        </p>
+        <button type="button" onclick="toggleHelpModal(true)" class="text-[11px] text-amber-500 font-extrabold hover:underline flex items-center space-x-1 mt-1">
+          <span>Ver como contornar no telemóvel/PC 🚀</span>
+        </button>
+      </div>
+
+      <form id="login-form" class="space-y-4">
+        <div>
+          <label class="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">URL do Servidor / Domínio</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-zinc-500">
+              <i data-lucide="globe" class="w-4 h-4"></i>
+            </span>
+            <input id="server-url" type="url" required value="http://pirulito.lat" placeholder="Ex: http://exemplo.com:8080" 
+              class="w-full glass-input rounded-xl py-3 pl-11 pr-4 text-white placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-amber-500 text-sm">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">Nome de Utilizador</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-zinc-500">
+              <i data-lucide="user" class="w-4 h-4"></i>
+            </span>
+            <input id="username" type="text" required value="94562465" placeholder="Seu utilizador" 
+              class="w-full glass-input rounded-xl py-3 pl-11 pr-4 text-white placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-amber-500 text-sm">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">Palavra-passe</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-zinc-500">
+              <i data-lucide="lock" class="w-4 h-4"></i>
+            </span>
+            <input id="password" type="password" required value="49126914" placeholder="Sua senha" 
+              class="w-full glass-input rounded-xl py-3 pl-11 pr-4 text-white placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-amber-500 text-sm">
+          </div>
+        </div>
+
+        <div class="pt-2">
+          <button type="submit" class="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-zinc-950 font-extrabold py-3.5 rounded-xl transition duration-200 flex items-center justify-center space-x-2 text-sm shadow-xl shadow-amber-500/10">
+            <span>Iniciar Sessão</span>
+            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- TUTORIAL CORS MODAL -->
+  <div id="help-modal" class="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 hidden overflow-y-auto">
+    <div class="glass-panel p-7 rounded-[30px] max-w-md w-full space-y-4 my-8 shadow-2xl">
+      <div class="flex items-center space-x-3 text-amber-500">
+        <i data-lucide="sparkles" class="w-6 h-6 animate-bounce"></i>
+        <h3 class="font-extrabold text-xl text-white">Como Desbloquear o IPTV</h3>
+      </div>
+      
+      <p class="text-xs text-zinc-400 leading-relaxed">
+        Os navegadores normais protegem o utilizador contra conexões externas inseguras. Por esse motivo, os canais de IPTV costumam ser bloqueados ao tentar aceder diretamente por aqui. Siga estes passos simples:
+      </p>
+
+      <div class="space-y-4 pt-2">
+        <div class="flex items-start space-x-3">
+          <div class="bg-amber-500/20 text-amber-500 font-bold rounded-xl text-xs w-6 h-6 flex items-center justify-center shrink-0 mt-0.5">1</div>
+          <div>
+            <h4 class="text-xs font-bold text-white">Instale a extensão de CORS</h4>
+            <p class="text-[11px] text-zinc-500 leading-relaxed mt-0.5">
+              Instale a extensão <strong class="text-zinc-300">"Allow CORS: Access-Control-Allow-Origin"</strong> no seu navegador (computador) ou use o Kiwi Browser no Android.
+            </p>
+            <a href="https://chromewebstore.google.com/detail/allow-cors-access-control/lhobafahddgcelonpcbdbomkkbgdlfcb" target="_blank" class="inline-block mt-2 text-[10px] bg-zinc-800 hover:bg-zinc-700 text-amber-500 px-3 py-1.5 rounded-lg font-bold transition">
+              Abrir Web Store 🌐
+            </a>
+          </div>
+        </div>
+
+        <div class="flex items-start space-x-3">
+          <div class="bg-amber-500/20 text-amber-500 font-bold rounded-xl text-xs w-6 h-6 flex items-center justify-center shrink-0 mt-0.5">2</div>
+          <div>
+            <h4 class="text-xs font-bold text-white">Ative a Extensão</h4>
+            <p class="text-[11px] text-zinc-500 leading-relaxed mt-0.5">
+              Clique no ícone da extensão instalada na barra de ferramentas e ligue-a (deverá ficar colorida/verde).
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-start space-x-3">
+          <div class="bg-amber-500/20 text-amber-500 font-bold rounded-xl text-xs w-6 h-6 flex items-center justify-center shrink-0 mt-0.5">3</div>
+          <div>
+            <h4 class="text-xs font-bold text-white">Recarregue o Assist Plus</h4>
+            <p class="text-[11px] text-zinc-500 leading-relaxed mt-0.5">
+              Volte aqui e clique no botão para entrar. A ligação vai conectar perfeitamente com os streams!
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-2">
+        <button onclick="toggleHelpModal(false)" class="w-full bg-amber-500 hover:bg-amber-600 text-zinc-950 font-extrabold py-3 rounded-xl text-xs transition shadow-xl">
+          Entendi, vou fazer isso!
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LAYOUT PRINCIPAL DO APLICATIVO -->
+  <div id="app-layout" class="hidden flex flex-col md:flex-row h-screen overflow-hidden p-0 md:p-4 gap-4">
+    
+    <!-- BARRA LATERAL ESTILO GLASS FLOATING (DESKTOP) / DOCK (MOBILE) -->
+    <aside class="w-full md:w-64 glass-panel md:rounded-[28px] flex flex-col justify-between z-10 shrink-0 mobile-dock">
+      
+      <!-- Logo Superior (Desktop) -->
+      <div class="p-5 border-b border-white/5 hidden md:block">
+        <div class="flex items-center space-x-3">
+          <div class="p-2.5 bg-amber-500 text-zinc-950 rounded-xl">
+            <i data-lucide="tv" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h2 class="font-extrabold text-sm leading-tight text-white tracking-widest">ASSIST+</h2>
+            <span class="text-[8px] bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded font-bold tracking-wider">NEBULA ONLINE</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Menu Principal -->
+      <nav class="flex md:flex-col md:space-y-1 p-2 md:p-4 overflow-x-auto md:overflow-x-visible justify-around md:justify-start flex-1 text-sm">
+        <button onclick="switchTab('home')" id="tab-home" class="flex flex-col md:flex-row items-center md:space-x-3 px-4 py-3 rounded-xl text-zinc-400 hover:text-white transition duration-200 flex-1 md:flex-initial">
+          <i data-lucide="home" class="w-5 h-5"></i>
+          <span class="text-[10px] md:text-sm mt-0.5 md:mt-0 font-bold">Início</span>
+        </button>
+        <button onclick="switchTab('tv')" id="tab-tv" class="flex flex-col md:flex-row items-center md:space-x-3 px-4 py-3 rounded-xl text-zinc-400 hover:text-white transition duration-200 flex-1 md:flex-initial">
+          <i data-lucide="monitor-play" class="w-5 h-5"></i>
+          <span class="text-[10px] md:text-sm mt-0.5 md:mt-0 font-bold">TV ao Vivo</span>
+        </button>
+        <button onclick="switchTab('movies')" id="tab-movies" class="flex flex-col md:flex-row items-center md:space-x-3 px-4 py-3 rounded-xl text-zinc-400 hover:text-white transition duration-200 flex-1 md:flex-initial">
+          <i data-lucide="film" class="w-5 h-5"></i>
+          <span class="text-[10px] md:text-sm mt-0.5 md:mt-0 font-bold">Filmes</span>
+        </button>
+        <button onclick="switchTab('series')" id="tab-series" class="flex flex-col md:flex-row items-center md:space-x-3 px-4 py-3 rounded-xl text-zinc-400 hover:text-white transition duration-200 flex-1 md:flex-initial">
+          <i data-lucide="clapperboard" class="w-5 h-5"></i>
+          <span class="text-[10px] md:text-sm mt-0.5 md:mt-0 font-bold">Séries</span>
+        </button>
+        <button onclick="switchTab('settings')" id="tab-settings" class="flex flex-col md:flex-row items-center md:space-x-3 px-4 py-3 rounded-xl text-zinc-400 hover:text-white transition duration-200 flex-1 md:flex-initial">
+          <i data-lucide="settings" class="w-5 h-5"></i>
+          <span class="text-[10px] md:text-sm mt-0.5 md:mt-0 font-bold">Definições</span>
+        </button>
+      </nav>
+
+      <!-- Rodapé da Barra Lateral (Desktop) -->
+      <div class="p-4 border-t border-white/5 hidden md:block">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-2.5">
+            <div class="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-amber-500 font-extrabold border border-white/10" id="user-avatar">
+              U
+            </div>
+            <div class="overflow-hidden">
+              <p class="text-xs font-bold text-zinc-300 truncate" id="user-display">Utilizador</p>
+              <p class="text-[9px] text-zinc-500 truncate" id="server-display">pirulito.lat</p>
+            </div>
+          </div>
+          <button onclick="logout()" class="p-2 hover:bg-white/5 rounded-xl text-rose-500 transition" title="Sair da Conta">
+            <i data-lucide="log-out" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CONTENTOR PRINCIPAL DE CONTEÚDO -->
+    <main class="flex-1 glass-panel md:rounded-[28px] flex flex-col overflow-hidden relative">
+      
+      <!-- Cabeçalho (Filtro e Busca) -->
+      <header id="main-header" class="bg-black/20 border-b border-white/5 px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4 z-10">
+        <div>
+          <h1 id="view-title" class="text-xl font-extrabold text-white tracking-wide">Início</h1>
+          <p id="view-subtitle" class="text-xs text-zinc-400">O seu centro de entretenimento personalizado</p>
+        </div>
+        <div class="w-full sm:w-80 relative">
+          <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-zinc-500">
+            <i data-lucide="search" class="w-4 h-4"></i>
+          </span>
+          <input id="search-bar" type="text" placeholder="Procurar canais, filmes ou séries..." oninput="handleSearch(this.value)"
+            class="w-full bg-zinc-950/40 border border-white/5 rounded-xl py-2 pl-10 pr-4 text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500 text-xs">
+        </div>
+      </header>
+
+      <!-- Área de Categorias e Lista de Itens -->
+      <div id="explorer-view" class="flex-1 flex overflow-hidden">
+        
+        <!-- Sidebar de Categorias (Desktop) -->
+        <div id="category-sidebar" class="w-64 bg-black/10 border-r border-white/5 overflow-y-auto hidden md:block">
+          <div class="p-4">
+            <h3 class="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-3">Categorias</h3>
+            <div id="category-list" class="space-y-1">
+              <div class="p-3 text-xs text-zinc-500 font-bold">A carregar categorias...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Conteúdo Ativo -->
+        <div class="flex-1 flex flex-col relative overflow-hidden">
+          
+          <!-- Seletor de Categoria Mobile -->
+          <div id="mobile-category-bar" class="p-3 border-b border-white/5 bg-black/10 md:hidden flex items-center justify-between hidden">
+            <span class="text-xs text-zinc-400 font-bold">Categoria:</span>
+            <select id="mobile-category-select" onchange="selectCategory(this.value)" class="bg-zinc-900 text-xs text-white border border-white/10 rounded-lg px-2 py-1.5 focus:outline-none focus:border-amber-500 max-w-[200px]">
+              <!-- Injetado dinamicamente -->
+            </select>
+          </div>
+
+          <!-- Grade de Filmes / Canais / Séries -->
+          <div id="content-grid" class="flex-1 overflow-y-auto p-4 md:p-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            <!-- Cards injetados -->
+          </div>
+        </div>
+      </div>
+
+      <!-- NOVO DASHBOARD HOME HUB -->
+      <div id="home-dashboard" class="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
+        <!-- Hero Featured Banner -->
+        <div class="relative rounded-2xl md:rounded-[22px] overflow-hidden aspect-[21/9] min-h-[160px] bg-gradient-to-r from-amber-500/10 to-transparent border border-white/5 flex items-center p-6 md:p-10">
+          <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1574375927938-d5a98e8edd86?q=80&w=1200&auto=format&fit=crop')] bg-cover bg-center opacity-25 mix-blend-overlay"></div>
+          <div class="relative space-y-2 max-w-lg">
+            <span class="text-[9px] bg-amber-500 text-zinc-950 px-2 py-0.5 rounded font-black tracking-widest uppercase">RECOMENDADO</span>
+            <h2 class="text-xl md:text-3xl font-black text-white leading-tight">Mergulhe no Novo Assist Plus</h2>
+            <p class="text-xs text-zinc-400 leading-relaxed max-w-sm">Assista a canais de TV em direto, filmes on-demand e as séries mais populares do momento na melhor velocidade.</p>
+            <div class="pt-2">
+              <button onclick="switchTab('tv')" class="bg-amber-500 hover:bg-amber-600 text-zinc-950 font-extrabold px-4 py-2 rounded-xl text-xs transition duration-200 flex items-center space-x-2">
+                <span>Navegar Canais</span>
+                <i data-lucide="play" class="w-3.5 h-3.5 fill-zinc-950"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Prateleira: Favoritos -->
+        <div id="fav-shelf-container" class="space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-black text-white tracking-wider flex items-center space-x-2">
+              <i data-lucide="star" class="w-4 h-4 text-amber-500 fill-amber-500"></i>
+              <span>Os Meus Favoritos</span>
+            </h3>
+          </div>
+          <div id="fav-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            <!-- Canais favoritos aqui -->
+          </div>
+        </div>
+
+        <!-- Prateleira: Recentemente Visualizados -->
+        <div id="recents-shelf-container" class="space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-black text-white tracking-wider flex items-center space-x-2">
+              <i data-lucide="clock" class="w-4 h-4 text-amber-500"></i>
+              <span>Visualizado Recentemente</span>
+            </h3>
+          </div>
+          <div id="recents-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            <!-- Últimos vistos aqui -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Spinner Central de Carregamento -->
+      <div id="loading-spinner" class="absolute inset-0 bg-zinc-950/90 flex items-center justify-center flex-col space-y-4 z-20 hidden">
+        <div class="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+        <p class="text-xs font-bold uppercase tracking-widest text-zinc-400">A obter catálogo...</p>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- TELA DE DEFINIÇÕES (Novo visual) -->
+  <div id="settings-view" class="hidden flex-1 overflow-y-auto p-6 max-w-4xl mx-auto w-full space-y-6">
+    <div class="glass-panel rounded-3xl p-6 shadow-xl">
+      <h2 class="text-lg font-black text-white mb-4 flex items-center space-x-2">
+        <i data-lucide="shield-alert" class="text-amber-500 w-5 h-5"></i>
+        <span>Informação da Lista IPTV</span>
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm" id="account-info">
+        <!-- Detalhes do utilizador -->
+      </div>
+    </div>
+
+    <div class="glass-panel rounded-3xl p-6 shadow-xl">
+      <h2 class="text-lg font-black text-white mb-4 flex items-center space-x-2">
+        <i data-lucide="help-circle" class="text-amber-500 w-5 h-5"></i>
+        <span>Instruções de CORS & Resolução de Problemas</span>
+      </h2>
+      <div class="space-y-4 text-sm text-zinc-400">
+        <p class="leading-relaxed">
+          Se as categorias ou canais estiverem vazios, isso deve-se a 100% de certeza à proteção padrão de CORS do seu navegador. 
+        </p>
+        <p class="leading-relaxed">
+          <strong>Como contornar em segurança:</strong> Ao instalar a extensão recomendada na tela de login, o seu navegador é autorizado a solicitar fluxos de canais ao seu servidor <code class="text-amber-500 bg-black/40 px-1.5 py-0.5 rounded text-xs">pirulito.lat</code> diretamente sem travamentos e na velocidade máxima disponível da sua rede.
+        </p>
+        <button onclick="toggleHelpModal(true)" class="bg-white/5 hover:bg-white/10 border border-white/5 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition">
+          Reabrir Passo a Passo 🚀
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PLAYER DE VÍDEO COMPLETO OVERLAY (PREMIUM THEATER VIEW) -->
+  <div id="video-modal" class="fixed inset-0 z-50 bg-black flex flex-col hidden">
+    <!-- Player Header -->
+    <header class="p-4 flex items-center justify-between text-white bg-gradient-to-b from-black/90 to-transparent absolute top-0 left-0 right-0 z-10">
+      <div class="flex items-center space-x-3">
+        <button onclick="closePlayer()" class="p-2.5 hover:bg-white/10 rounded-full transition">
+          <i data-lucide="arrow-left" class="w-6 h-6"></i>
+        </button>
+        <div>
+          <h2 id="player-title" class="font-black text-sm md:text-base leading-tight">Canal de IPTV</h2>
+          <p id="player-category" class="text-xs text-zinc-400">Transmitindo ao vivo</p>
+        </div>
+      </div>
+      <div class="flex items-center space-x-2">
+        <span class="text-xs text-zinc-400 bg-zinc-900 border border-zinc-800 px-3 py-1 rounded-lg font-bold" id="player-format">HLS/TS</span>
+      </div>
+    </header>
+
+    <!-- Contentor do Player -->
+    <div class="flex-1 flex items-center justify-center bg-black">
+      <video id="video-element" class="w-full h-full max-h-screen object-contain" controls autoplay playsinline></video>
+      <div id="player-loading" class="absolute inset-0 bg-black/60 flex items-center justify-center flex-col space-y-3 pointer-events-none hidden">
+        <div class="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+        <p class="text-xs font-semibold text-zinc-300">A carregar a transmissão de vídeo...</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- ESTADO GERAL DA APLICAÇÃO ---
+    const state = {
+      credentials: {
+        url: '',
+        username: '',
+        password: ''
+      },
+      currentTab: 'home',
+      categories: {
+        tv: [],
+        movies: [],
+        series: []
+      },
+      activeCategory: 'all',
+      items: [],
+      searchQuery: '',
+      isLoaded: false,
+      favorites: [],
+      recents: []
+    };
+
+    let hlsInstance = null;
+
+    // --- EXECUÇÃO INICIAL ---
+    window.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      loadFavorites();
+      loadRecents();
+      loadStoredCredentials();
+      
+      document.getElementById('login-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        handleLogin();
+      });
+
+      const videoEl = document.getElementById('video-element');
+      videoEl.addEventListener('waiting', () => showPlayerLoading(true));
+      videoEl.addEventListener('playing', () => showPlayerLoading(false));
+      videoEl.addEventListener('error', () => {
+        showToast("Erro ao processar fluxo. Verifique se ativou a extensão de CORS.");
+        showPlayerLoading(false);
+      });
+    });
+
+    // --- CARREGAR FAVORITOS E RECENTES ---
+    function loadFavorites() {
+      const stored = localStorage.getItem('assist_plus_favorites');
+      if (stored) {
+        try {
+          state.favorites = JSON.parse(stored);
+        } catch (e) {
+          state.favorites = [];
+        }
+      }
+    }
+
+    function toggleFavorite(itemId, e) {
+      if (e) e.stopPropagation();
+      const idx = state.favorites.indexOf(itemId);
+      if (idx > -1) {
+        state.favorites.splice(idx, 1);
+        showToast("Removido dos favoritos");
+      } else {
+        state.favorites.push(itemId);
+        showToast("Adicionado aos favoritos!");
+      }
+      localStorage.setItem('assist_plus_favorites', JSON.stringify(state.favorites));
+      
+      // Re-renderizar prateleiras e grids
+      if (state.currentTab === 'home') {
+        renderHomeHub();
+      } else {
+        renderGrid();
+      }
+    }
+
+    function loadRecents() {
+      const stored = localStorage.getItem('assist_plus_recents');
+      if (stored) {
+        try {
+          state.recents = JSON.parse(stored);
+        } catch (e) {
+          state.recents = [];
+        }
+      }
+    }
+
+    function addRecent(item) {
+      // Evitar duplicados rápidos
+      state.recents = state.recents.filter(x => (x.stream_id || x.series_id) !== (item.stream_id || item.series_id));
+      state.recents.unshift(item);
+      // Guardar apenas os últimos 12 vistos
+      if (state.recents.length > 12) {
+        state.recents.pop();
+      }
+      localStorage.setItem('assist_plus_recents', JSON.stringify(state.recents));
+    }
+
+    // --- CREDENCIAIS ---
+    function loadStoredCredentials() {
+      const stored = localStorage.getItem('assist_plus_auth');
+      if (stored) {
+        try {
+          const creds = JSON.parse(stored);
+          state.credentials = creds;
+          
+          document.getElementById('server-url').value = creds.url;
+          document.getElementById('username').value = creds.username;
+          document.getElementById('password').value = creds.password;
+          
+          validateAndConnect();
+        } catch (e) {
+          localStorage.removeItem('assist_plus_auth');
+        }
+      }
+    }
+
+    async function handleLogin() {
+      let url = document.getElementById('server-url').value.trim();
+      if (url.endsWith('/')) {
+        url = url.slice(0, -1);
+      }
+      
+      state.credentials.url = url;
+      state.credentials.username = document.getElementById('username').value.trim();
+      state.credentials.password = document.getElementById('password').value.trim();
+
+      validateAndConnect();
+    }
+
+    async function validateAndConnect() {
+      showGlobalSpinner(true, "A testar ligação com o servidor...");
+      
+      const testUrl = `${buildBaseUrl()}&action=get_live_categories`;
+      
+      try {
+        const response = await fetchWithTimeout(testUrl, {}, 8000);
+        if (!response.ok) throw new Error("Acesso negado");
+        
+        const data = await response.json();
+        
+        if (data && (Array.isArray(data) || typeof data === 'object')) {
+          showToast("Ligação ao servidor efetuada!");
+          localStorage.setItem('assist_plus_auth', JSON.stringify(state.credentials));
+          
+          document.getElementById('login-screen').classList.add('hidden');
+          document.getElementById('app-layout').classList.remove('hidden');
+          
+          document.getElementById('user-avatar').innerText = state.credentials.username.substring(0, 2).toUpperCase();
+          document.getElementById('user-display').innerText = state.credentials.username;
+          document.getElementById('server-display').innerText = state.credentials.url.replace(/https?:\/\//, '');
+
+          await initializeData();
+        } else {
+          throw new Error("Formato de dados inesperado.");
+        }
+      } catch (err) {
+        showToast("Falha ao ligar. Ative a extensão CORS e tente novamente.");
+        toggleHelpModal(true);
+        console.error(err);
+      } finally {
+        showGlobalSpinner(false);
+      }
+    }
+
+    // --- CARREGAMENTO DE INFORMAÇÕES DA API ---
+    async function initializeData() {
+      showGlobalSpinner(true, "A obter categorias do servidor...");
+      try {
+        const [liveCats, vodCats, seriesCats] = await Promise.all([
+          fetchFromApi('get_live_categories'),
+          fetchFromApi('get_vod_categories'),
+          fetchFromApi('get_series_categories')
+        ]);
+
+        state.categories.tv = Array.isArray(liveCats) ? liveCats : [];
+        state.categories.movies = Array.isArray(vodCats) ? vodCats : [];
+        state.categories.series = Array.isArray(seriesCats) ? seriesCats : [];
+
+        // Inicializar com a tela Home
+        await switchTab('home');
+      } catch (err) {
+        showToast("Impossível aceder às listas.");
+      } finally {
+        showGlobalSpinner(false);
+      }
+    }
+
+    async function loadContentForTab(tab) {
+      showGlobalSpinner(true, `A obter catálogo de ${tab === 'tv' ? 'Canais' : tab === 'movies' ? 'Filmes' : 'Séries'}...`);
+      state.activeCategory = 'all';
+      state.searchQuery = '';
+      document.getElementById('search-bar').value = '';
+      
+      try {
+        let action = '';
+        if (tab === 'tv') action = 'get_live_streams';
+        else if (tab === 'movies') action = 'get_vod_streams';
+        else if (tab === 'series') action = 'get_series';
+
+        const data = await fetchFromApi(action);
+        state.items = Array.isArray(data) ? data : [];
+        
+        renderCategories(tab);
+        renderGrid();
+      } catch (err) {
+        showToast("Erro de rede ao carregar os itens.");
+        state.items = [];
+        renderGrid();
+      } finally {
+        showGlobalSpinner(false);
+      }
+    }
+
+    // --- AUXILIARES DA API ---
+    function buildBaseUrl() {
+      const { url, username, password } = state.credentials;
+      return `${url}/player_api.php?username=${username}&password=${password}`;
+    }
+
+    async function fetchFromApi(action) {
+      const endpoint = `${buildBaseUrl()}&action=${action}`;
+      const response = await fetchWithTimeout(endpoint, {}, 15000);
+      if (!response.ok) throw new Error("Erro de servidor");
+      return response.json();
+    }
+
+    function fetchWithTimeout(resource, options = {}, timeout = 10000) {
+      return new Promise((resolve, reject) => {
+        const timer = setTimeout(() => reject(new Error('Timeout')), timeout);
+        fetch(resource, options)
+          .then(response => {
+            clearTimeout(timer);
+            resolve(response);
+          })
+          .catch(err => {
+            clearTimeout(timer);
+            reject(err);
+          });
+      });
+    }
+
+    // --- SEÇÕES E VISUALIZAÇÃO ---
+    async function switchTab(tab) {
+      state.currentTab = tab;
+      
+      ['home', 'tv', 'movies', 'series', 'settings'].forEach(t => {
+        const btn = document.getElementById(`tab-${t}`);
+        if (t === tab) btn.classList.add('active-tab');
+        else btn.classList.remove('active-tab');
+      });
+
+      const explorerView = document.getElementById('explorer-view');
+      const categorySidebar = document.getElementById('category-sidebar');
+      const mobileCategoryBar = document.getElementById('mobile-category-bar');
+      const homeDashboard = document.getElementById('home-dashboard');
+      const settingsView = document.getElementById('settings-view');
+      const header = document.getElementById('main-header');
+
+      // Fechar e redefinir exibições
+      explorerView.classList.add('hidden');
+      homeDashboard.classList.add('hidden');
+      settingsView.classList.add('hidden');
+      header.classList.remove('hidden');
+
+      if (tab === 'settings') {
+        settingsView.classList.remove('hidden');
+        renderSettings();
+      } else if (tab === 'home') {
+        homeDashboard.classList.remove('hidden');
+        document.getElementById('view-title').innerText = 'Início';
+        document.getElementById('view-subtitle').innerText = 'O seu centro de entretenimento personalizado';
+        renderHomeHub();
+      } else {
+        explorerView.classList.remove('hidden');
+        categorySidebar.classList.remove('hidden');
+        mobileCategoryBar.classList.remove('hidden');
+        
+        const titles = { tv: 'TV ao Vivo', movies: 'Filmes', series: 'Séries' };
+        const subtitles = { 
+          tv: 'Transmissões em direto do seu servidor', 
+          movies: 'Filmes On Demand completos', 
+          series: 'Séries catalogadas por episódios' 
+        };
+        
+        document.getElementById('view-title').innerText = titles[tab];
+        document.getElementById('view-subtitle').innerText = subtitles[tab];
+
+        await loadContentForTab(tab);
+      }
+      lucide.createIcons();
+    }
+
+    // --- NOVO HOME HUB COMPONENT ---
+    function renderHomeHub() {
+      const favGrid = document.getElementById('fav-grid');
+      const recentsGrid = document.getElementById('recents-grid');
+
+      favGrid.innerHTML = '';
+      recentsGrid.innerHTML = '';
+
+      // Mostrar/Ocultar prateleiras baseadas em dados
+      const favsList = state.items.filter(item => state.favorites.includes(item.stream_id || item.series_id));
+      if (state.favorites.length === 0) {
+        document.getElementById('fav-shelf-container').classList.add('hidden');
+      } else {
+        document.getElementById('fav-shelf-container').classList.remove('hidden');
+        // Renderizar favoritos (no Home, pegamos do estado se já tiver carregado ou deixamos dinâmico)
+        if (state.items && state.items.length > 0) {
+          favsList.forEach(item => favGrid.appendChild(createItemCard(item)));
+        } else {
+          favGrid.innerHTML = `<div class="col-span-full text-xs text-zinc-500 py-4">Carregue a aba de TV ao vivo ou Filmes para atualizar esta prateleira.</div>`;
+        }
+      }
+
+      if (state.recents.length === 0) {
+        document.getElementById('recents-shelf-container').classList.add('hidden');
+      } else {
+        document.getElementById('recents-shelf-container').classList.remove('hidden');
+        state.recents.forEach(item => recentsGrid.appendChild(createItemCard(item)));
+      }
+      lucide.createIcons();
+    }
+
+    function renderCategories(tab) {
+      const listContainer = document.getElementById('category-list');
+      const mobileSelect = document.getElementById('mobile-category-select');
+      
+      listContainer.innerHTML = '';
+      mobileSelect.innerHTML = '';
+
+      const cats = state.categories[tab];
+
+      const allBtn = document.createElement('button');
+      allBtn.className = `w-full text-left px-3 py-2.5 rounded-xl text-xs transition font-bold flex items-center justify-between ${state.activeCategory === 'all' ? 'bg-amber-500/10 text-amber-500' : 'text-zinc-400 hover:text-white hover:bg-zinc-900'}`;
+      allBtn.onclick = () => selectCategory('all');
+      allBtn.innerHTML = `<span>Todos os Conteúdos</span> <span class="bg-zinc-800 text-[10px] px-2 py-0.5 rounded text-zinc-400">${state.items.length}</span>`;
+      listContainer.appendChild(allBtn);
+
+      const allOption = document.createElement('option');
+      allOption.value = 'all';
+      allOption.text = 'Todas as Categorias';
+      mobileSelect.appendChild(allOption);
+
+      cats.forEach(cat => {
+        const catId = cat.category_id;
+        const count = state.items.filter(item => item.category_id === catId).length;
+        
+        if (count > 0) {
+          const btn = document.createElement('button');
+          btn.className = `w-full text-left px-3 py-2 rounded-lg text-xs transition truncate flex items-center justify-between ${state.activeCategory === catId ? 'bg-amber-500/10 text-amber-500' : 'text-zinc-400 hover:text-white hover:bg-zinc-900/60'}`;
+          btn.onclick = () => selectCategory(catId);
+          btn.innerHTML = `<span class="truncate pr-2">${cat.category_name}</span> <span class="bg-zinc-800/60 text-[10px] px-1.5 py-0.5 rounded text-zinc-500">${count}</span>`;
+          listContainer.appendChild(btn);
+
+          const option = document.createElement('option');
+          option.value = catId;
+          option.text = `${cat.category_name} (${count})`;
+          if (state.activeCategory === catId) option.selected = true;
+          mobileSelect.appendChild(option);
+        }
+      });
+    }
+
+    function selectCategory(catId) {
+      state.activeCategory = catId;
+      renderCategories(state.currentTab);
+      renderGrid();
+    }
+
+    // --- CRIAR CARD GENÉRICO DE ITEM ---
+    function createItemCard(item) {
+      const card = document.createElement('div');
+      card.className = "group glass-card rounded-2xl overflow-hidden shadow-lg transition duration-300 flex flex-col justify-between cursor-pointer card-zoom relative";
+      
+      const name = item.name || item.title || 'Sem Título';
+      const imgUrl = item.stream_icon || item.cover || 'https://images.unsplash.com/photo-1594909122845-11baa439b7bf?q=80&w=300&auto=format&fit=crop';
+      const streamId = item.stream_id || item.series_id;
+      const isFav = state.favorites.includes(streamId);
+
+      card.onclick = () => playContent(item);
+
+      // Botão Favorito Flutuante
+      const favBtnHtml = `
+        <button onclick="toggleFavorite('${streamId}', event)" class="absolute top-2.5 right-2.5 z-10 p-2 rounded-xl bg-black/60 hover:bg-black/80 border border-white/5 text-amber-500 transition duration-200">
+          <i data-lucide="star" class="w-4 h-4 ${isFav ? 'fill-amber-500' : 'text-zinc-400'}"></i>
+        </button>
+      `;
+
+      const tabType = item.series_id ? 'series' : (item.stream_type === 'live' ? 'tv' : 'movies');
+
+      if (tabType === 'tv') {
+        card.innerHTML = `
+          ${favBtnHtml}
+          <div class="p-4 flex flex-col items-center justify-center text-center space-y-3 flex-1">
+            <div class="w-16 h-16 bg-black/30 rounded-xl border border-white/5 flex items-center justify-center overflow-hidden p-2 relative transition duration-300">
+              <img src="${imgUrl}" onerror="this.src='https://images.unsplash.com/photo-1598257006458-087169a1f08d?q=80&w=150&auto=format&fit=crop'" alt="Logo" class="max-w-full max-h-full object-contain">
+            </div>
+            <h4 class="text-xs font-black text-zinc-300 group-hover:text-amber-500 transition line-clamp-2 leading-tight">${name}</h4>
+          </div>
+          <div class="px-3 py-1.5 bg-black/30 border-t border-white/5 flex items-center justify-between text-[10px] text-zinc-500">
+            <span class="font-bold">#${streamId}</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          </div>
+        `;
+      } else {
+        const rating = item.rating || '';
+        card.innerHTML = `
+          ${favBtnHtml}
+          <div class="relative aspect-[2/3] bg-zinc-950 overflow-hidden">
+            <img src="${imgUrl}" onerror="this.src='https://images.unsplash.com/photo-1594909122845-11baa439b7bf?q=80&w=300&auto=format&fit=crop'" alt="Capa" class="w-full h-full object-cover transition duration-500">
+            ${rating ? `<span class="absolute top-2 left-2 bg-black/80 border border-white/5 text-[10px] text-amber-500 font-bold px-1.5 py-0.5 rounded-lg flex items-center space-x-1">⭐ <span>${rating}</span></span>` : ''}
+            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center">
+              <div class="p-3 bg-amber-500 text-zinc-950 rounded-full scale-75 group-hover:scale-100 transition duration-300 shadow-xl">
+                <i data-lucide="play" class="w-6 h-6 fill-zinc-950 text-zinc-950"></i>
+              </div>
+            </div>
+          </div>
+          <div class="p-3 bg-black/10">
+            <h4 class="text-xs font-bold text-zinc-300 group-hover:text-amber-500 transition truncate">${name}</h4>
+            <p class="text-[10px] text-zinc-500 mt-0.5">${item.releaseDate || item.release_date || 'Completo'}</p>
+          </div>
+        `;
+      }
+      return card;
+    }
+
+    function renderGrid() {
+      const grid = document.getElementById('content-grid');
+      grid.innerHTML = '';
+
+      let filtered = state.items;
+      
+      if (state.activeCategory !== 'all') {
+        filtered = filtered.filter(item => item.category_id === state.activeCategory);
+      }
+
+      if (state.searchQuery) {
+        const query = state.searchQuery.toLowerCase();
+        filtered = filtered.filter(item => {
+          const name = (item.name || item.title || '').toLowerCase();
+          return name.includes(query);
+        });
+      }
+
+      if (filtered.length === 0) {
+        grid.className = "flex-1 flex flex-col items-center justify-center text-center p-8 space-y-3";
+        grid.innerHTML = `
+          <i data-lucide="package-open" class="w-12 h-12 text-zinc-600 animate-bounce"></i>
+          <div>
+            <p class="text-zinc-400 font-bold">Sem resultados</p>
+            <p class="text-xs text-zinc-600">Não encontrámos itens correspondentes aos critérios de pesquisa.</p>
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+
+      grid.className = "flex-1 overflow-y-auto p-4 md:p-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 align-content-start";
+
+      filtered.forEach(item => {
+        grid.appendChild(createItemCard(item));
+      });
+      lucide.createIcons();
+    }
+
+    function handleSearch(val) {
+      state.searchQuery = val;
+      if (state.currentTab === 'home') {
+        // Se pesquisar na Home, mudar automaticamente para TV para mostrar catálogo completo filtrado
+        switchTab('tv').then(() => {
+          document.getElementById('search-bar').value = val;
+          state.searchQuery = val;
+          renderGrid();
+        });
+      } else {
+        renderGrid();
+      }
+    }
+
+    // --- REPRODUTOR DE VÍDEO INTEGRADO ---
+    async function playContent(item) {
+      const playerTitle = document.getElementById('player-title');
+      const playerCategory = document.getElementById('player-category');
+      const playerFormat = document.getElementById('player-format');
+      const videoElement = document.getElementById('video-element');
+      
+      const { url, username, password } = state.credentials;
+      let streamUrl = '';
+      
+      if (hlsInstance) {
+        hlsInstance.destroy();
+        hlsInstance = null;
+      }
+      videoElement.pause();
+      videoElement.removeAttribute('src');
+      videoElement.load();
+
+      const name = item.name || item.title || 'Transmissão';
+      playerTitle.innerText = name;
+
+      const tabType = item.series_id ? 'series' : (item.stream_type === 'live' ? 'tv' : 'movies');
+
+      if (tabType === 'tv') {
+        streamUrl = `${url}/live/${username}/${password}/${item.stream_id}.ts`;
+        playerCategory.innerText = "Canal de TV em Direto";
+        playerFormat.innerText = "IPTV Direct Stream (.TS)";
+      } else if (tabType === 'movies') {
+        const extension = item.container_extension || 'mp4';
+        streamUrl = `${url}/movie/${username}/${password}/${item.stream_id}.${extension}`;
+        playerCategory.innerText = "Filme On Demand";
+        playerFormat.innerText = extension.toUpperCase();
+      } else if (tabType === 'series') {
+        showGlobalSpinner(true, "A carregar episódios da série...");
+        try {
+          const info = await fetchFromApi(`get_series_info&series_id=${item.series_id}`);
+          showGlobalSpinner(false);
+          
+          if (info && info.episodes && Object.keys(info.episodes).length > 0) {
+            const firstSeasonKey = Object.keys(info.episodes)[0];
+            const firstEpisode = info.episodes[firstSeasonKey][0];
+            if (firstEpisode) {
+              const ext = firstEpisode.container_extension || 'mp4';
+              streamUrl = `${url}/series/${username}/${password}/${firstEpisode.id}.${ext}`;
+              playerTitle.innerText = `${name} - T${firstSeasonKey} E${firstEpisode.episode_num}: ${firstEpisode.title}`;
+              playerCategory.innerText = "Episódio de Série";
+              playerFormat.innerText = ext.toUpperCase();
+            } else {
+              throw new Error();
+            }
+          } else {
+            throw new Error();
+          }
+        } catch (e) {
+          showGlobalSpinner(false);
+          showToast("Nenhum episódio localizado.");
+          return;
+        }
+      }
+
+      // Adicionar aos recentes
+      addRecent(item);
+
+      document.getElementById('video-modal').classList.remove('hidden');
+      showPlayerLoading(true);
+
+      // Decidir o motor de reprodução apropriado
+      if (streamUrl.includes('.m3u8')) {
+        if (Hls.isSupported()) {
+          hlsInstance = new Hls({ maxMaxBufferLength: 10 });
+          hlsInstance.loadSource(streamUrl);
+          hlsInstance.attachMedia(videoElement);
+          hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
+            videoElement.play();
+            showPlayerLoading(false);
+          });
+          hlsInstance.on(Hls.Events.ERROR, function (e, data) {
+            if (data.fatal) {
+              switch (data.type) {
+                case Hls.ErrorTypes.NETWORK_ERROR:
+                  hlsInstance.startLoad();
+                  break;
+                case Hls.ErrorTypes.MEDIA_ERROR:
+                  hlsInstance.recoverMediaError();
+                  break;
+                default:
+                  showToast("Falha irrecuperável na stream.");
+                  closePlayer();
+                  break;
+              }
+            }
+          });
+        } else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
+          videoElement.src = streamUrl;
+          videoElement.addEventListener('loadedmetadata', () => {
+            videoElement.play();
+            showPlayerLoading(false);
+          });
+        }
+      } else {
+        // Streams diretos de .ts / .mp4 / .mkv
+        videoElement.src = streamUrl;
+        videoElement.play().then(() => {
+          showPlayerLoading(false);
+        }).catch(() => {
+          showPlayerLoading(false);
+          showToast("Erro ao abrir vídeo. Ative a extensão CORS.");
+          closePlayer();
+        });
+      }
+    }
+
+    function closePlayer() {
+      const videoElement = document.getElementById('video-element');
+      if (hlsInstance) {
+        hlsInstance.destroy();
+        hlsInstance = null;
+      }
+      videoElement.pause();
+      videoElement.removeAttribute('src');
+      videoElement.load();
+      document.getElementById('video-modal').classList.add('hidden');
+    }
+
+    // --- DEFINIÇÕES ---
+    async function renderSettings() {
+      const container = document.getElementById('account-info');
+      const { url, username } = state.credentials;
+      container.innerHTML = `
+        <div class="space-y-1">
+          <span class="text-zinc-500 text-xs">Servidor Utilizado</span>
+          <p class="font-black text-white break-all text-xs">${url}</p>
+        </div>
+        <div class="space-y-1">
+          <span class="text-zinc-500 text-xs">ID de Utilizador</span>
+          <p class="font-black text-white text-xs">${username}</p>
+        </div>
+        <div class="space-y-1">
+          <span class="text-zinc-500 text-xs">Estado de Ligação</span>
+          <p class="font-black text-emerald-400 text-xs flex items-center space-x-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block animate-pulse"></span>
+            <span>Ligado</span>
+          </p>
+        </div>
+        <div class="space-y-1">
+          <span class="text-zinc-500 text-xs">Segurança CORS</span>
+          <p class="font-black text-amber-500 text-xs">Exige extensão para evitar bloqueios</p>
+        </div>
+      `;
+    }
+
+    function logout() {
+      if (hlsInstance) {
+        hlsInstance.destroy();
+      }
+      localStorage.removeItem('assist_plus_auth');
+      state.credentials = { url: '', username: '', password: '' };
+      
+      document.getElementById('app-layout').classList.add('hidden');
+      document.getElementById('settings-view').classList.add('hidden');
+      document.getElementById('login-screen').classList.remove('hidden');
+      
+      document.getElementById('server-url').value = '';
+      document.getElementById('username').value = '';
+      document.getElementById('password').value = '';
+
+      showToast("Dados de login limpos.");
+    }
+
+    // --- INTERAÇÕES / UTILS ---
+    function toggleHelpModal(show) {
+      const modal = document.getElementById('help-modal');
+      if (show) modal.classList.remove('hidden');
+      else modal.classList.add('hidden');
+    }
+
+    function showGlobalSpinner(show, msg = "A carregar...") {
+      const spinner = document.getElementById('loading-spinner');
+      const text = spinner.querySelector('p');
+      text.innerText = msg;
+      
+      if (show) spinner.classList.remove('hidden');
+      else spinner.classList.add('hidden');
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      const msgSpan = document.getElementById('toast-message');
+      
+      msgSpan.innerText = message;
+      toast.classList.remove('translate-x-full');
+      toast.classList.add('translate-x-0');
+      
+      setTimeout(() => {
+        toast.classList.remove('translate-x-0');
+        toast.classList.add('translate-x-full');
+      }, 4500);
+    }
+    
+    function showPlayerLoading(show) {
+      const loader = document.getElementById('player-loading');
+      if (show) loader.classList.remove('hidden');
+      else loader.classList.add('hidden');
+    }
+  </script>
+</body>
+</html>
